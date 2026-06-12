@@ -23,6 +23,7 @@ The `sae-new` application uses a clean separation between routing (the Next.js `
 1. **Routing Layer** (`apps/sae-new/src/app/...`)
    - Folders in the routing layer must be named using **kebab-case** (e.g., `activity-management`, `score-framework-version`).
    - Pages must only serve as thin wrappers that import and render feature layout components from the `features/` directory.
+   - **No Route-Level Layouts**: Do not create a `layout.tsx` file inside individual route folders (e.g., `app/activity-management/layout.tsx`) unless specifically requested. The global or operation-level layout will automatically wrap the page.
    - Example: `apps/sae-new/src/app/admin/score-framework-version/page.tsx`
      ```tsx
      import ScoreFrameworkVersionLayout from "@/features/admin/scoreFrameworkVersion/scoreFrameworkVersionLayout";
