@@ -132,6 +132,9 @@ export function MyFeatureForm() {
 > **Special Cases for Framework Buttons (`<CustomButtonCreateUpdate>`, `<CustomButtonDelete>`, etc.)**: 
 > If you are using the `<CustomButtonCreateUpdate>` or `<CustomButtonDelete>` component from the core framework to build your forms or delete actions, you do **NOT** even need to declare a `useCustomReactMutation` hook inside your component. The button components automatically manage the mutation lifecycle, loading states, and notifications internally. You simply pass an `onSubmit` or `deleteFn` function that directly returns your API service Promise, and use `customReactMutationProps={{ onSuccess: () => ... }}` (for CreateUpdate) or handle cache invalidation inside the `deleteFn` (or via its internal hook mechanism) to invalidate queries.
 
+> [!IMPORTANT]
+> **Extract Action Components**: Always extract individual action components (like Create/Update modals, Delete buttons, Approve buttons, etc.) into their own separate files (e.g. `MyFeatureDeleteButton.tsx`, `MyFeatureCreateUpdate.tsx`). Do **NOT** inline `<CustomButtonDelete>` or large form components directly inside the Table component's `renderRowActions`. Each component should have exactly one responsibility. This keeps the Table component clean and prevents unnecessary re-renders.
+
 ## Unified API and UI Model Pattern
 
 To maximize maintainability and reduce code complexity, **do not build translation mappings back and forth** between the frontend UI structures (form states, table columns) and the backend API models.
