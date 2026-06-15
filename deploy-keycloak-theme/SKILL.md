@@ -1,27 +1,27 @@
 ---
 name: deploy-keycloak-theme
-description: Hướng dẫn cách build và deploy Keycloak theme (React) vào server Keycloak nội bộ.
+description: Guide on how to build and deploy the Keycloak theme (React) to the internal Keycloak server.
 ---
 
 # Deploy Keycloak Theme
 
-Khi làm việc với project `keycloak-theme` (`apps/keycloak-theme`), nếu bạn cần build và cập nhật (deploy) giao diện vào máy chủ Keycloak đang chạy cục bộ (local) của dự án, bạn **BẮT BUỘC** phải làm theo quy trình sau:
+When working with the `keycloak-theme` project (`apps/keycloak-theme`), if you need to build and update (deploy) the interface to the locally running Keycloak server of the project, you **MUST** follow this procedure:
 
-## 1. Không sử dụng lệnh build độc lập
-Thay vì tự chạy `pnpm run build-keycloak-theme` và tự đóng gói file `.jar`, bạn hãy sử dụng lệnh deploy đã được cấu hình sẵn trong dự án.
+## 1. Do Not Use Standalone Build Commands
+Instead of running `pnpm run build-keycloak-theme` and manually packaging the `.jar` file, you must use the pre-configured deploy command in the project.
 
-## 2. Cách thức Deploy
-Sử dụng script sau tại thư mục `apps/keycloak-theme`:
+## 2. Deployment Method
+Run the following script in the `apps/keycloak-theme` directory:
 
 ```bash
 pnpm run deploy
 ```
 
-Lệnh này sẽ tự động gọi file `deploy-theme.bat` để:
-1. Build toàn bộ ứng dụng React và biên dịch sang giao diện FreeMarker của Keycloak.
-2. Tự động `xcopy` toàn bộ thư mục theme đã build vào thư mục `themes/keycloakify-starter` của máy chủ gốc (`nestjs-framework/themes/...`).
-3. Nhờ cơ chế Hot-Reload của thư mục `themes/`, bạn chỉ cần yêu cầu người dùng **F5 (Hard Refresh)** lại trình duyệt là sẽ thấy ngay cập nhật mà không cần phải khởi động lại server Keycloak.
+This command will automatically execute the `deploy-theme.bat` file to:
+1. Build the entire React application and compile it into Keycloak's FreeMarker templates.
+2. Automatically `xcopy` the built theme directory to the `themes/keycloakify-starter` directory of the original server (`nestjs-framework/themes/...`).
+3. Thanks to the Hot-Reload mechanism of the `themes/` directory, you only need to ask the user to press **F5 (Hard Refresh)** on the browser to see the updates immediately without needing to restart the Keycloak server.
 
-## 3. Lưu ý khi Deploy
-- Quá trình deploy có thể tốn vài giây đến một phút do cần chạy trình đóng gói Vite và sao chép file.
-- Luôn sử dụng lệnh này thay cho các phương thức đóng gói `.jar` thủ công trước đây.
+## 3. Deployment Notes
+- The deployment process may take a few seconds to a minute because it needs to run the Vite bundler and copy files.
+- Always use this command instead of the manual `.jar` packaging methods used previously.

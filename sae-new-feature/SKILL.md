@@ -111,6 +111,7 @@ export default function Page() {
 
 ## Best Practices and Conventions
 
+- **Mandatory Type Checking (CRITICAL)**: After completing the code (adding new features, fixing bugs, updating the UI, etc.), you **MUST** run the TypeScript check command (e.g., `pnpm exec tsc --noEmit` in the corresponding project directory) to find and proactively fix all arising Type errors before reporting the task as complete.
 - **"use client"**: Ensure `"use client";` is added to the top of all feature layouts and interactive sub-components.
 - **Responsive design**: Use `hookController.isMobile` or Mantine's responsive hooks to conditionally scale side panels (e.g., switching panel width from `340px` to `100%`).
 - **Permissions**: When adding action buttons, use `<CustomButton actionType="create" />` from `@aq-fe/core-ui` to handle automatic role-based permission visibility natively.

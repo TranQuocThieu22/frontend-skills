@@ -1,20 +1,20 @@
 ---
 name: git-commit-convention
-description: Quy định bắt buộc khi viết commit message cho dự án
+description: Mandatory rules for writing commit messages for the project.
 ---
 
-# Quy Định Viết Git Commit Message
+# Git Commit Message Convention
 
-Khi thực hiện tạo commit cho dự án, bạn **bắt buộc** phải tuân thủ các quy tắc sau:
+When creating a commit for the project, you **MUST** adhere to the following rules:
 
-1. **Ngôn ngữ**: Commit message phải được viết bằng **Tiếng Việt**.
-2. **Menu bị ảnh hưởng**: Bắt buộc phải lưu/ghi chú rõ **tên menu bị ảnh hưởng** bởi thay đổi trong nội dung commit (ví dụ: `=> Menu bị ảnh hưởng: Quản lý danh sách hoạt động cộng đồng`).
-3. **Cấu trúc**:
-   - Tiêu đề commit (dòng 1): Theo chuẩn `<type>(<scope>): <short summary>`.
-     - `<type>` bắt buộc phải là một trong các loại chuẩn: `feat`, `fix`, `chore`, `ci`, `build`, `docs`, `refactor`, `test`, `perf`, `style`. Tuyệt đối KHÔNG DÙNG từ không chuẩn như `update` hoặc "Cập nhật".
-     - `<scope>` (trong ngoặc đơn) **BẮT BUỘC** là tên dự án/package bị ảnh hưởng (ví dụ: `sae-new`, `aq-core-framework`, `core-ui`). Nếu thay đổi từ 2 package trở lên, phân tách bằng dấu phẩy (ví dụ: `refactor(sae-new,core-ui): ...`). Tuyệt đối không dùng tên folder feature làm scope.
-     - `<short summary>` **BẮT BUỘC** phải viết bằng **Tiếng Việt** (ví dụ: `sắp xếp lại menu và xoá file jwtUtils`).
-   - Body commit: Giải thích chi tiết hơn về thay đổi (nếu cần thiết) và dòng ghi chú menu bị ảnh hưởng.
-4. **Quy trình thực hiện**: Tuyệt đối **KHÔNG** tự ý thực thi các lệnh `git commit`. Bạn chỉ được phép sinh ra nội dung commit message và in ra trong phần chat.
-5. **Định dạng hiển thị**: TUYỆT ĐỐI KHÔNG sinh ra tin nhắn commit dưới dạng lệnh Terminal (ví dụ `git commit -m "..."`). Hãy in TOÀN BỘ nội dung commit (bao gồm Tiêu đề, một dòng trống, và Body) gộp chung vào **MỘT khối code block duy nhất** dạng text thô. Không tách rời tiêu đề và body ra văn bản riêng, để người dùng có thể bấm Copy một lần và dán (paste) thẳng vào giao diện Git GUI (như Fork, SourceTree) cho nhanh.
-6. **Tách biệt commit cho Skills và Code**: Nếu trong quá trình làm việc có phát sinh cập nhật/chỉnh sửa ở cả thư mục `.agents/skills` (hướng dẫn/luật) và thư mục source code của dự án, **BẮT BUỘC** phải sinh ra 2 commit message riêng biệt. Một commit dành riêng cho thư mục skills (vì skills được lưu ở một repo/phần riêng), và một commit dành cho source code dự án. Tuyệt đối không được viết gộp chung vào 1 commit message.
+1. **Language**: Commit messages must be written in **Vietnamese**.
+2. **Affected Menu**: You must clearly log/note the **name of the affected menu** caused by the changes in the commit content (e.g., `=> Menu bị ảnh hưởng: Quản lý danh sách hoạt động cộng đồng`).
+3. **Structure**:
+   - Commit title (line 1): Follow the format `<type>(<scope>): <short summary>`.
+     - `<type>` MUST be one of the standard types: `feat`, `fix`, `chore`, `ci`, `build`, `docs`, `refactor`, `test`, `perf`, `style`. Absolutely DO NOT use non-standard words like `update` or "Cập nhật".
+     - `<scope>` (in parentheses) **MUST** be the name of the affected project/package (e.g., `sae-new`, `aq-core-framework`, `core-ui`). If changes affect 2 or more packages, separate them with a comma (e.g., `refactor(sae-new,core-ui): ...`). Absolutely do not use feature folder names as the scope.
+     - `<short summary>` **MUST** be written in **Vietnamese** (e.g., `sắp xếp lại menu và xoá file jwtUtils`).
+   - Commit body: Explain the changes in more detail (if necessary) and include the note about the affected menu.
+4. **Execution Process**: Absolutely **DO NOT** execute `git commit` commands automatically. You are only allowed to generate the commit message content and print it in the chat.
+5. **Display Format**: ABSOLUTELY DO NOT generate the commit message as a Terminal command (e.g., `git commit -m "..."`). Please print the ENTIRE commit content (including the Title, an empty line, and the Body) grouped into **ONE single raw text code block**. Do not separate the title and body into different texts, so the user can click Copy once and paste it directly into a Git GUI interface (like Fork, SourceTree) quickly.
+6. **Separate Commits for Skills and Code**: If your work involves updates/edits in both the `.agents/skills` directory (guides/rules) and the project's source code directory, you **MUST** generate 2 separate commit messages. One commit specifically for the skills directory (since skills are stored in a separate repo/part), and one commit for the project source code. Absolutely do not merge them into 1 commit message.

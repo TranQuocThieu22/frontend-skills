@@ -1,25 +1,25 @@
 ---
 name: project-framework-rules
-description: Quy định bắt buộc về việc sử dụng các package framework (aq-core-framework, aq-standard-framework, aq-legacy-framework) cho từng ứng dụng trong monorepo.
+description: Mandatory rules regarding the use of framework packages (aq-core-framework, aq-standard-framework, aq-legacy-framework) for each application in the monorepo.
 ---
 
-# Quy Định Sử Dụng Framework Packages
+# Framework Packages Usage Rules
 
-Dự án này là một Monorepo chứa nhiều ứng dụng (`apps/`) và nhiều thư viện dùng chung (`packages/`). Để đảm bảo tính nhất quán và tránh phình to kích thước ứng dụng (bundle size), khi code hoặc cài đặt module, bạn **bắt buộc phải tuân thủ nghiêm ngặt** quy tắc phân bổ framework sau đây:
+This project is a Monorepo containing multiple applications (`apps/`) and multiple shared libraries (`packages/`). To ensure consistency and avoid bloating the application bundle size, when coding or installing modules, you **must strictly adhere** to the following framework allocation rules:
 
-### 1. Thành phần UI (@aq-fe/core-ui)
-- **Phạm vi**: Tất cả các dự án đều xài.
-- **Quy tắc**: Mọi dự án trong `apps/` đều được phép import và sử dụng `@aq-fe/core-ui`.
+### 1. UI Components (@aq-fe/core-ui)
+- **Scope**: Used by all projects.
+- **Rule**: All projects inside `apps/` are allowed to import and use `@aq-fe/core-ui`.
 
-### 2. Các Framework xử lý Logic (@aq-fe/aq-*-framework)
-Tuyệt đối KHÔNG import thừa các framework không thuộc dự án. Quy tắc ánh xạ như sau:
+### 2. Logic Processing Frameworks (@aq-fe/aq-*-framework)
+Absolutely DO NOT import redundant frameworks that do not belong to the project. The mapping rules are as follows:
 
-- **`sae-new`**: CHỈ xài `@aq-fe/aq-core-framework`.
-- **`spm`**: CHỈ xài `@aq-fe/aq-standard-framework`.
-- **Tất cả các dự án còn lại** (như `eaq`, `school`, `college`, v.v.): xài `@aq-fe/aq-legacy-framework`.
+- **`sae-new`**: ONLY use `@aq-fe/aq-core-framework`.
+- **`spm`**: ONLY use `@aq-fe/aq-standard-framework`.
+- **All other projects** (like `eaq`, `school`, `college`, etc.): use `@aq-fe/aq-legacy-framework`.
 
 ---
 
-### Lưu ý quan trọng cho Developer:
-Nhìn vào file `package.json` thực tế đôi khi bạn sẽ thấy một dự án bị cài "kẹp" cả 3 framework (như hình ảnh lúc thêm skill này, dự án `spm` bị cài cả `core`, `legacy`, và `standard`). 
-=> Khi làm việc, bạn **chỉ được phép import code từ đúng framework được phân công ở trên**. Việc cài thừa có thể do clone file cấu hình, nhưng lúc import code tuyệt đối không được gọi nhầm thư viện của dự án khác.
+### Important Note for Developers:
+Looking at the actual `package.json` file, sometimes you might see a project being installed with all 3 frameworks (e.g., when adding this skill, the `spm` project was found to have `core`, `legacy`, and `standard` installed).
+=> When working, you **are only allowed to import code from the exact framework assigned above**. The redundant installation might be due to cloning configuration files, but when importing code, absolutely do not mistakenly call the library of another project.
