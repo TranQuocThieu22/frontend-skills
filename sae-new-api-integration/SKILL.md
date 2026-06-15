@@ -49,7 +49,10 @@ export const myService = {
 
 ## Data Fetching with `useCustomReactQuery`
 
-The project utilizes `useCustomReactQuery` from `@aq-fe/aq-core-framework/shared/hooks/useCustomReactQuery` to wrap standard `@tanstack/react-query`'s `useQuery` with custom interceptors and error configurations.
+The project utilizes `useCustomReactQuery` from `@aq-fe/aq-core-framework/shared/hooks/useCustomReactQuery` to wrap standard `@tanstack/react-query`'s `useQuery`.
+
+> [!IMPORTANT]
+> **Mandatory Usage for Error Handling**: You MUST use `useCustomReactQuery` and `useCustomReactMutation` instead of raw `@tanstack/react-query` hooks for all backend API interactions (unless explicitly stated otherwise, e.g. for shared dropdowns). These custom hooks contain centralized logic to automatically handle standard backend errors and exceptions, ensuring consistent error reporting across the entire application without needing to manually write `try/catch` or `onError` blocks everywhere. Even if you are mocking data locally, still use `useCustomReactQuery` and pass a mocked Promise into the `serviceFn` (returning an object mimicking `AxiosResponse<CustomAPIResponse<T>>`) so that when the real backend API is ready, you only need to swap out the `serviceFn` seamlessly.
 
 ### Custom Queries Implementation Pattern
 
@@ -124,6 +127,10 @@ export function MyFeatureForm() {
   );
 }
 ```
+
+> [!TIP]
+> **Special Cases for Framework Buttons (`<CustomButtonCreateUpdate>`, `<CustomButtonDelete>`, etc.)**: 
+> If you are using the `<CustomButtonCreateUpdate>` or `<CustomButtonDelete>` component from the core framework to build your forms or delete actions, you do **NOT** even need to declare a `useCustomReactMutation` hook inside your component. The button components automatically manage the mutation lifecycle, loading states, and notifications internally. You simply pass an `onSubmit` or `deleteFn` function that directly returns your API service Promise, and use `customReactMutationProps={{ onSuccess: () => ... }}` (for CreateUpdate) or handle cache invalidation inside the `deleteFn` (or via its internal hook mechanism) to invalidate queries.
 
 ## Unified API and UI Model Pattern
 
