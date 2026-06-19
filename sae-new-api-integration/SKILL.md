@@ -25,6 +25,10 @@ All API services must be declared as distinct files inside the `src/shared/APIs/
 ### Writing an API Service
 
 Here is the standard pattern for an API service:
+
+> [!WARNING]
+> **CRITICAL RULE: DO NOT PREFIX WITH `/api/`**: The `axiosInstance` already configures the base URL with `/api/` automatically. When defining `CONTROLLER` in your API service, you **MUST NOT** include `/api/` in the path (e.g. use `const CONTROLLER = "/LearningOutcomeProgress";` instead of `const CONTROLLER = "/api/LearningOutcomeProgress";`). Failure to do so will result in duplicated `/api/api/...` URL errors.
+
 ```typescript
 import axiosInstance from "../configs/axiosInstance";
 import { CustomAPIResponse } from "@aq-fe/aq-core-framework/shared/interfaces/CustomAPIResponse";
@@ -224,7 +228,7 @@ To maximize maintainability and reduce code complexity, **do not build translati
 7. **Relocate Interfaces to Shared Folder (MANDATORY)**: Khi đã tích hợp API rồi thì di chuyển interface ra thư mục `shared/interfaces` của ứng dụng để dùng chung và có thể sử dụng ở các menu khác. Đồng thời, cập nhật tất cả các đường dẫn import cũ sang `@/shared/interfaces/<InterfaceName>` và xóa file interface cục bộ ban đầu.
 8. **Strict Payload Typing (No `any`)**: When constructing payloads to send to the backend (e.g., inside a `buildPayload` function before an API call), **DO NOT use `any`**. Instead, explicitly define an `[EntityName]Payload` interface in the `shared/interfaces/[EntityName].ts` file (e.g., `CommunityActivityPayload`) and use it to strictly type your payload object. This ensures TypeScript enforces API schema compliance during form submission and prevents missing fields or mismatched data types.
 9. **Explicit Mock Data Commenting**: Any mock arrays, static lists, dummy data constants, or unimplemented feature placeholders MUST be explicitly commented with `// MOCK:` (e.g., `// MOCK: Temporary mock data for academic terms, waiting for API integration`). This ensures they can be easily tracked and replaced during final API integration.
-10. **Server-Side Search, Filtering & Pagination (MANDATORY)**: Always implement search bars, data filters, and **pagination (PageNumber, PageSize)** by passing them as query parameters to the backend API (`useCustomReactQuery` payload). **Luôn luôn sử dụng server-side paging cho các bảng dữ liệu.** Do NOT filter, search, or paginate data locally on the frontend UI unless explicitly requested. If the backend does not yet support pagination (or specific filters), include `PageNumber` and `PageSize` in the API payload interface anyway, and explicitly report it in the `API_STATUS_PENDING.md` file so the backend team can update it. Use `useDebouncedValue` for search inputs to prevent spamming API requests.
+10. **Server-Side Search, Filtering & Pagination (MANDATORY)**: Always implement search bars, data filters, and **pagination (PageNumber, PageSize)** by passing them as query parameters to the backend API (`useCustomReactQuery` payload). **Luôn luôn sử dụng server-side paging và server-side search cho các bảng dữ liệu.** Do NOT filter, search, or paginate data locally on the frontend UI unless explicitly requested. If the backend does not yet support search or pagination, include `PageNumber`, `PageSize`, and the search query in the API payload interface anyway, explicitly report it in the `API_STATUS_PENDING.md` file, **AND ALWAYS NOTIFY THE USER IN THE CHAT IMMEDIATELY** so the backend team can update it. Use `useDebouncedValue` for search inputs to prevent spamming API requests.
 11. **No Mock Data for Integrated APIs (MANDATORY)**: Once an API is integrated and functioning, you **MUST NOT** use fallback mock data for missing fields (e.g., `const val = row.original.type || MOCK_ENUM_VALUE`). If a field is missing from the backend response, show an empty state (like `--`) or a warning icon with a tooltip (e.g., `IconAlertTriangle` with "Đang chờ API") to indicate that the data is pending from the backend.
 12. **No Inline Object Types (MANDATORY)**: Do not define nested inline object types inside a parent interface (e.g., `communityType: { id: string; name: string; }`). Always extract these nested objects into their own exported interface models (e.g., `export interface CommunityType {...}`) and import/reuse them across the project. This ensures proper reusability, consistency, and prevents duplication of type definitions.
 13. **Date Payload Formatting (MANDATORY)**: Khi xử lý payload của các form có chứa ngày bắt đầu và ngày kết thúc (ví dụ: `startDate`, `endDate`, `openRegisterDate`, `closeRegisterDate`), bạn BẮT BUỘC phải format thêm giờ phút giây cụ thể để gửi xuống backend. Ngày bắt đầu phải cộng thêm `00:00:00` và ngày kết thúc phải cộng thêm `23:59:59`. Ví dụ: `dayjs(body.startDate).format("YYYY-MM-DDT00:00:00")` và `dayjs(body.endDate).format("YYYY-MM-DDT23:59:59")`.
@@ -235,8 +239,6 @@ To maximize maintainability and reduce code complexity, **do not build translati
 > 
 > **Prototype Badge Removal**: Do not forget to remove `isPrototype: true` when a page is no longer a mock/static prototype. Having mock pages marked as completed or completed pages marked with the "P" badge confuses users and QA teams.
 >
-> **Backend Enum Searching**: **DO NOT** independently search for enum definitions or map values directly by reading the backend folder files (e.g., in `D:\AQ-Project\SAE-Backend`). Only search the backend codebase for enums if the user explicitly asks or gives permission to do so. Otherwise, rely on Swagger documentation or ask the user for the mapping.
-
 ### Example Implementation:
 
 #### 1. Form Initialization using the Backend Interface
