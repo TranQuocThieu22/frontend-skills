@@ -13,7 +13,7 @@ However, to provide developers in Apps with the best coding experience (VS Code 
 #### Step 1: At the shared library (Framework)
 Declare an empty `interface` to act as a "socket", and a dynamic `Type` that automatically fallbacks to string if no one plugs into it:
 ```typescript
-// Example at: packages/aq-standard-framework/src/shared/features/FeatureFlagContext.tsx
+// Example at: packages/core-ui/src/shared/features/FeatureFlagContext.tsx
 
 // 1. Empty interface waiting for apps to plug types into
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -37,7 +37,7 @@ export interface AppFeatures {
 }
 
 // Inject AppFeatures type into the base library
-declare module '@aq-fe/aq-standard-framework/shared/features/FeatureFlagContext' {
+declare module '@aq-fe/core-ui/shared/features/FeatureFlagContext' {
     export interface FeatureFlagRegistry extends AppFeatures {}
 }
 ```
