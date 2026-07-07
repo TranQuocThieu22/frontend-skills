@@ -14,17 +14,28 @@ Class model (Backend): `LichSuDangKyRequest` (File: `Edusoft.DataObjects\WEB\Pho
 
 **Các trường có thể truyền vào:**
 - `tu_khoa` (string): Lọc theo mã đơn, mục đích sử dụng, hoặc loại phòng.
-- `loai_don` (string): Được định nghĩa trong model nhưng **hiện tại Backend chưa code xử lý lọc theo trường này**.
+- `id_loai_phong` (string): Lọc theo loại phòng (Đã được Backend bổ sung).
+- `id_ly_do_sd_ph` (string): Lọc theo mục đích sử dụng (Đã được Backend bổ sung).
+- `loai_don` (string): Hiện tại Backend có nhận tham số này nhưng ít sử dụng.
 - `trang_thai` (int?): `null` (Tất cả), `-1` (Chờ duyệt), `0` (Không duyệt), `1` (Được duyệt), `2` (Đã hủy), `3` (Quá hạn), `4` (Sắp quá hạn).
-- `tu_ngay` (string): Lọc từ ngày (Định dạng: `dd/MM/yyyy`).
-- `den_ngay` (string): Lọc đến ngày (Định dạng: `dd/MM/yyyy`).
+- `tu_ngay_gui_don` (string): Lọc từ ngày gửi đơn (Định dạng: `dd/MM/yyyy`).
+- `den_ngay_gui_don` (string): Lọc đến ngày gửi đơn (Định dạng: `dd/MM/yyyy`).
+- `ngay_su_dung` (string): Lọc theo ngày sử dụng phòng (Định dạng: `dd/MM/yyyy`). **Lưu ý:** Chỉ nhận 1 ngày duy nhất, không hỗ trợ khoảng thời gian (Range) như thiết kế giao diện gốc.
 - `additional` (AdditionalDO): Chứa thông tin phân trang `paging` (`page`, `limit`).
 
-**Lưu ý quan trọng:**
-- Mặc dù giao diện (Frontend) có bộ lọc "Loại phòng" và "Mục đích sử dụng" bằng ID (ví dụ: `-8826528838853969552`), Backend hiện tại **không có** trường `id_loai_phong` hay `id_ly_do_sd_ph` trong class `LichSuDangKyRequest`.
-- Thay vào đó, Backend chỉ định nghĩa trường `loai_don`, nhưng trường này cũng đang bị bỏ qua trong logic LINQ của API `W_LoadLichSuDangKySuDungPhong`.
-- Do đó, để bộ lọc hoạt động chính xác ở Backend, cần phải yêu cầu team Backend (hoặc tự sửa source C#) bổ sung thêm các trường `id_loai_phong` và `id_ly_do_sd_ph` vào `LichSuDangKyRequest`, đồng thời thêm điều kiện `Where` vào `query`.
-
+**Kết quả trả về bổ sung:**
+Backend đã bổ sung đối tượng `thong_ke` trong dữ liệu trả về của API này nhằm thống kê số lượng đơn theo từng trạng thái. Frontend đọc dữ liệu `thong_ke` để hiển thị số đếm (badge) lên các Tab (thay vì đọc từ API danh mục bộ lọc).
+```json
+"thong_ke": {
+  "tat_ca": 1,
+  "cho_duyet": 0,
+  "khong_duyet": 0,
+  "duoc_duyet": 1,
+  "da_huy": 0,
+  "qua_han": 0,
+  "sap_qua_han": 0
+}
+```
 ## 2. Lỗi Logic Trạng Thái Lưới Phòng Đã Duyệt (`w-loadphongchucnangtheokhunggio`)
 
 **Vấn đề:** 
