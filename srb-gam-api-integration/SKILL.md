@@ -1,20 +1,21 @@
 ---
-name: srb-api-integration
-description: Guides the implementation of API services, axios requests, React Query data fetching hooks, and unified API-UI data models in the SRB project.
+name: srb-gam-api-integration
+description: Guides the implementation of API services, axios requests, React Query data fetching hooks, and unified API-UI data models in the SRB and GAM projects.
 ---
 
-# SRB API Integration Skill
+# SRB & GAM API Integration Skill
 
-This skill explains how to build and maintain API services, manage server-state using `@tanstack/react-query` and `useCustomReactQuery`, and directly bind backend entities to user interface form models inside the `srb` project.
+This skill explains how to build and maintain API services, manage server-state using `@tanstack/react-query` and `useCustomReactQuery`, and directly bind backend entities to user interface form models inside the `srb` and `gam` projects.
 
 > [!NOTE]
-> **Backend Repository Path**: The backend source code for the SRB project is located locally at `D:\AQ-Project\Source.NET`.
+> **Backend Repository Path**: The backend source code for the SRB and GAM projects is located locally at `D:\AQ-Project\Source.NET`.
+>
 > - **CRITICAL RULE**: Before reading or analyzing any backend code in `D:\AQ-Project\Source.NET`, you **MUST** run `git pull` or `git fetch` (using the `run_command` tool) in that directory to ensure you are working with the latest codebase.
 > - When integrating new APIs or if there is any ambiguity about the request/response schema, actively check the backend controllers, DTOs, and services in that directory to ensure exact alignment.
 
-## API Services Directory (`apps/srb/src/shared/APIs/`)
+## API Services Directory (`apps/srb/src/shared/APIs/` and `apps/gam/src/shared/APIs/`)
 
-All API services must be declared as distinct files inside the `src/shared/APIs/` folder. They use `axiosInstance` imported from `@/shared/configs/axiosInstance` and optional base API helpers like `createBaseAPI` from `@aq-fe/aq-core-framework/shared/libs/createBaseAPI`.
+All API services must be declared as distinct files inside the `src/shared/APIs/` folder of the respective app (`apps/srb/src/shared/APIs/` or `apps/gam/src/shared/APIs/`). They use `axiosInstance` imported from `@/shared/configs/axiosInstance` and optional base API helpers like `createBaseAPI` from `@aq-fe/aq-core-framework/shared/libs/createBaseAPI`.
 
 ### Writing an API Service
 
@@ -36,7 +37,7 @@ export const myService = {
   getCustomData: (tenantId: string, pageNumber: number) => {
     return axiosInstance.get<CustomAPIResponse<MyModel[]>>(
       `${CONTROLLER}/${tenantId}/custom`,
-      { params: { PageNumber: pageNumber } }
+      { params: { PageNumber: pageNumber } },
     );
   },
 };
@@ -66,17 +67,18 @@ The project utilizes `useCustomReactQuery` from `@aq-fe/aq-core-framework/shared
 To maximize maintainability and reduce code complexity, **do not build translation mappings back and forth** between the frontend UI structures (form states, table columns) and the backend API models.
 
 ### Core Guidelines:
+
 1. **Direct Interface Binding**: Ensure that the Mantine `useForm` values, TypeScript interfaces, and component properties utilize the exact backend API entity and request models directly.
-    * **CRITICAL**: Khi định nghĩa cột bảng (Table Columns) bằng `accessorKey` hoặc các trường dữ liệu trên UI, **PHẢI sử dụng chính xác tên field của backend**. Tuyệt đối **không tạo ra các props riêng trên UI** rồi map lại thủ công từ field của backend.
+   - **CRITICAL**: Khi định nghĩa cột bảng (Table Columns) bằng `accessorKey` hoặc các trường dữ liệu trên UI, **PHẢI sử dụng chính xác tên field của backend**. Tuyệt đối **không tạo ra các props riêng trên UI** rồi map lại thủ công từ field của backend.
 2. **Handle Backend Defaults Dynamically**: Compute necessary derived fields in the form's `onSubmit` payload without altering the form's underlying model structure.
 3. **Preserve UI Prototypes (CRITICAL & MANDATORY)**: If the backend API is missing some fields or features that are present in the pre-existing UI prototype, **DO NOT delete the UI fields or disable them**.
-    * Keep the UI fields fully operational on the client side (e.g., by extending the backend TypeScript interface locally).
-    * Omit the missing fields from the API request payloads during submission, or let the backend ignore them.
-    * **Mandatory Deliverable (API Status Tracker)**: Every time an API integration is developed, you **MUST** create an `API_STATUS_PENDING.md` or `API_STATUS_DONE.md` report directly inside the target feature folder tracking progress and UI/API gaps.
-    * **Visual Indicator for Missing Fields (Icon + Tooltip)**: Khi tích hợp API, nếu giao diện (UI) có trường dữ liệu (field) nhưng backend không có field đó, bạn **bắt buộc** phải hiển thị rõ icon cảnh báo (ví dụ icon warning dấu chấm than) kèm theo tooltip giải thích trên giao diện, đồng thời **phải note rõ** vấn đề này vào file báo cáo tích hợp (API_STATUS).
+   - Keep the UI fields fully operational on the client side (e.g., by extending the backend TypeScript interface locally).
+   - Omit the missing fields from the API request payloads during submission, or let the backend ignore them.
+   - **Mandatory Deliverable (API Status Tracker)**: Every time an API integration is developed, you **MUST** create an `API_STATUS_PENDING.md` or `API_STATUS_DONE.md` report directly inside the target feature folder tracking progress and UI/API gaps.
+   - **Visual Indicator for Missing Fields (Icon + Tooltip)**: Khi tích hợp API, nếu giao diện (UI) có trường dữ liệu (field) nhưng backend không có field đó, bạn **bắt buộc** phải hiển thị rõ icon cảnh báo (ví dụ icon warning dấu chấm than) kèm theo tooltip giải thích trên giao diện, đồng thời **phải note rõ** vấn đề này vào file báo cáo tích hợp (API_STATUS).
 
-## General Integration Notes for SRB
+## General Integration Notes for SRB & GAM
 
 - Similar to other apps, implement server-side pagination, search, and filtering wherever possible.
-- All date filtering payload parameters should be formatted correctly to UTC. 
+- All date filtering payload parameters should be formatted correctly to UTC.
 - Mock prototypes must have the `isPrototype` badge removed from the menu configuration in `layout.tsx` or `routes.config.tsx` once fully integrated.
