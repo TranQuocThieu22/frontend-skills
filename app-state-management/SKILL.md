@@ -1,17 +1,17 @@
 ---
-name: sae-new-state
-description: Directs state management patterns using Zustand in the SAE-new project. Use when designing, updating, or syncing feature-specific and global states across components, side-effects, or local storage.
+name: app-state-management
+description: Directs state management patterns using Zustand and React Query across all Next.js applications in the monorepo (sae-new, srb, gam, rrs, etc.). Use when designing, updating, or syncing feature-specific and global states across components, side-effects, or local storage.
 ---
 
-# SAE-New State Management Skill
+# State Management Skill (All Apps)
 
-This skill outlines how to design, create, and interact with global and feature-specific stores using `zustand` in the `sae-new` project.
+This skill outlines how to design, create, and interact with global and feature-specific stores using `zustand` across all Next.js applications in the monorepo.
 
 ## Global Stores vs. Feature Stores
 
-- **Global Stores** (`apps/sae-new/src/shared/stores/`): Manage global states like user session, authentication, and global UI preferences.
+- **Global Stores** (`apps/<app-name>/src/shared/stores/`): Manage global states like user session, authentication, and global UI preferences.
   - Example: `authenticate-store` houses the active JWT token, user info, and role permissions, persisted in `localStorage`.
-- **Feature Stores** (`apps/sae-new/src/features/<feature-name>/shared/` where `<feature-name>` is in camelCase, e.g., `apps/sae-new/src/features/activityManagement/shared/`): Keep local user edits, active selections, sidebar panel visibility, or complex form states encapsulated within a specific feature.
+- **Feature Stores** (`apps/<app-name>/src/features/<feature-name>/shared/` where `<feature-name>` is in camelCase, e.g., `apps/<app-name>/src/features/activityManagement/shared/`): Keep local user edits, active selections, sidebar panel visibility, or complex form states encapsulated within a specific feature.
   - Example: `useActivityManagementStore` manages active lists, selections, and unsaved edits inside the feature.
 
 ## Zustand Implementation Patterns

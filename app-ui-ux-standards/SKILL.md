@@ -1,11 +1,11 @@
 ---
-name: sae-new-ui-ux
-description: Outlines styling, UI component integration, Mantine v8 styling, custom CSS, animations, and design aesthetics in the SAE-new project. Use when designing, styling, animating, or tweaking components.
+name: app-ui-ux-standards
+description: Outlines styling, UI component integration, Mantine v8 styling, custom CSS, animations, and design aesthetics across all Next.js applications in the monorepo (sae-new, srb, gam, rrs, etc.). Use when designing, styling, animating, or tweaking components in any project.
 ---
 
-# SAE-New UI/UX and Styling Standards Skill
+# UI/UX and Styling Standards Skill (All Apps)
 
-This skill explains how to build high-fidelity, polished, premium interfaces in the `sae-new` project using Mantine v8, custom CSS modules, global animations, and our dedicated design system.
+This skill explains how to build high-fidelity, polished, premium interfaces across all Next.js applications in the monorepo using Mantine v8, custom CSS modules, global animations, and our dedicated design system (`@aq-fe/core-ui`).
 
 ## Typography and Spacing System (`FONT_FAMILY`, `FONT_SIZE`)
 

@@ -1,11 +1,11 @@
 ---
-name: sae-new-feature
-description: Guide on how to create, structure, and integrate new features and pages in the SAE-new Next.js application. Use when adding new functionalities, layouts, or nested pages inside apps/sae-new.
+name: app-feature-development
+description: Guide on how to create, structure, and integrate new features, pages, and UI prototypes across all Next.js applications in the monorepo (sae-new, srb, gam, rrs, etc.). Use when adding new functionalities, layouts, or nested pages in any project.
 ---
 
-# SAE-New Feature Development Skill
+# Feature Development & UI Prototype Skill (All Apps)
 
-This skill provides step-by-step guidance, standards, and patterns for creating and developing features in the `sae-new` application.
+This skill provides step-by-step guidance, standards, and patterns for creating and developing UI prototypes and features across all Next.js applications in the monorepo.
 
 ## 3. Component Architecture & Reusability
 
@@ -18,13 +18,13 @@ This skill provides step-by-step guidance, standards, and patterns for creating 
 
 ## Folder Architecture
 
-The `sae-new` application uses a clean separation between routing (the Next.js `app` router) and feature logic. Always follow this separation of concerns:
+All Next.js applications in the monorepo (e.g., `apps/srb/`, `apps/gam/`, `apps/sae-new/`, `apps/rrs/`, etc.) use a clean separation between routing (the Next.js `app` router) and feature logic. Always follow this separation of concerns:
 
-1. **Routing Layer** (`apps/sae-new/src/app/...`)
+1. **Routing Layer** (`apps/<app-name>/src/app/...`)
    - Folders in the routing layer must be named using **kebab-case** (e.g., `activity-management`, `score-framework-version`).
    - Pages must only serve as thin wrappers that import and render feature layout components from the `features/` directory.
    - **No Route-Level Layouts**: Do not create a `layout.tsx` file inside individual route folders (e.g., `app/activity-management/layout.tsx`) unless specifically requested. The global or operation-level layout will automatically wrap the page.
-   - Example: `apps/sae-new/src/app/admin/score-framework-version/page.tsx`
+   - Example: `apps/<app-name>/src/app/admin/score-framework-version/page.tsx`
      ```tsx
      import ScoreFrameworkVersionLayout from "@/features/admin/scoreFrameworkVersion/scoreFrameworkVersionLayout";
      export default function Page() {
@@ -32,7 +32,7 @@ The `sae-new` application uses a clean separation between routing (the Next.js `
      }
      ```
 
-2. **Feature Layer** (`apps/sae-new/src/features/<feature-name>/`)
+2. **Feature Layer** (`apps/<app-name>/src/features/<feature-name>/`)
    - Feature directories must be named using **camelCase** (e.g., `activityManagement`, `scoreFrameworkVersion`).
    - Each feature should contain:
      - `components/`: Specific UI components utilized only by this feature, named in **PascalCase** (e.g., `ActivityManagementTable.tsx`).
@@ -49,7 +49,7 @@ The `sae-new` application uses a clean separation between routing (the Next.js `
 ## Step-by-Step Feature Creation Process
 
 ### 1. Define the Feature Directory
-Create a subfolder in `apps/sae-new/src/features/` using **camelCase** (e.g., `features/operation/activityManagement`).
+Create a subfolder in `apps/<app-name>/src/features/` using **camelCase** (e.g., `features/operation/activityManagement`).
 ```
 features/operation/activityManagement/
 ├── components/
