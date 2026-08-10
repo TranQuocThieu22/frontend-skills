@@ -12,9 +12,9 @@ Khi dự án Next.js đang được chạy ở chế độ phát triển (Dev Se
 
 ## Cách xử lý
 - **Trước khi Build**: Nếu có thể, hãy tắt (kill) task chạy Dev Server trước khi thực hiện `pnpm build`.
-- **Sau khi Build xong**: Nếu trước đó bạn vừa build dự án mà Dev Server vẫn đang chạy ngầm, bạn **BẮT BUỘC** phải:
-  1. Kill task Dev Server cũ.
-  2. Chạy lại lệnh Dev Server (VD: `pnpm --filter rrs dev`) để khởi tạo lại thư mục build cho môi trường dev.
+- **Sau khi Build xong**: Nếu trước đó bạn vừa build dự án (ví dụ `next build` hoặc `turbo build`) mà Dev Server vẫn đang chạy ngầm, bạn **BẮT BUỘC** phải làm theo trình tự sau:
+  1. Dùng công cụ `manage_task` (với action là `list` và `kill`) để **tắt hoàn toàn** task chạy Dev Server cũ đi.
+  2. Dùng công cụ `run_command` để chạy lại lệnh Dev Server (VD: `pnpm exec turbo dev --filter=rrs` và nhớ set flag `IsDaemon=true`) để khởi tạo lại thư mục build cho môi trường dev.
 
 ## Dấu hiệu nhận biết
 - Trình duyệt hiện dòng chữ: `missing required error components, refreshing...`

@@ -24,3 +24,8 @@ Khi thực hiện tích hợp API trong ứng dụng `rrs` (Room Reservation Sys
 
 **Quy tắc:**
 - Không tự ý sửa mã nguồn Backend của dự án C#. Chỉ cần phân tích, khoanh vùng chính xác vị trí lỗi (ví dụ file Controller tương ứng) và đưa ra đặc tả (specification) để báo cho team Backend tự khắc phục.
+
+## Quy tắc báo cáo khi tích hợp (Integration Reporting Rules)
+- **BẮT BUỘC:** Mỗi khi người dùng yêu cầu "tích hợp API" (integrate API) cho một Form, Bảng, hoặc một tính năng bất kỳ trên một trang (page), sau khi hoàn thành tích hợp, bạn phải quét lại **toàn bộ các thành phần trên trang đó** (không chỉ giới hạn ở component vừa làm).
+- Nếu phát hiện ra **bất kỳ dữ liệu nào trên trang vẫn còn đang bị hard code (dữ liệu giả/mock)** (ví dụ: các tuỳ chọn của Select, filter, text hiển thị tĩnh, dữ liệu bảng chưa được map với API do thiếu trường trả về), bạn **PHẢI** liệt kê danh sách chi tiết các chỗ hard code đó và báo cáo lại ngay cho người dùng trong câu trả lời kết luận của bạn.
+- Bạn cần nêu rõ nguyên nhân (ví dụ: "Do API hiện tại chưa hỗ trợ trường này", hoặc "Thiếu API chuyên biệt cho tính năng này", hoặc "Nghi ngờ lỗi cấu trúc Backend"). Điều này giúp người dùng dễ dàng theo dõi và tạo task cho đội Backend xử lý bổ sung.
