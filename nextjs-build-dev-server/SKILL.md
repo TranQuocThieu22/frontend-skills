@@ -11,10 +11,15 @@ Khi dự án Next.js đang được chạy ở chế độ phát triển (Dev Se
 Điều này dẫn đến việc Dev Server bị mất file và gây ra hàng loạt lỗi trên trình duyệt (như lỗi HTTP 500 Internal Server Error liên tục, hoặc thông báo `missing required error components, refreshing...` trên giao diện, và các lỗi `ENOENT` ở console).
 
 ## Cách xử lý
-- **Trước khi Build**: Nếu có thể, hãy tắt (kill) task chạy Dev Server trước khi thực hiện `pnpm build`.
-- **Sau khi Build xong**: Nếu trước đó bạn vừa build dự án (ví dụ `next build` hoặc `turbo build`) mà Dev Server vẫn đang chạy ngầm, bạn **BẮT BUỘC** phải làm theo trình tự sau:
-  1. Dùng công cụ `manage_task` (với action là `list` và `kill`) để **tắt hoàn toàn** task chạy Dev Server cũ đi.
-  2. Dùng công cụ `run_command` để chạy lại lệnh Dev Server (VD: `pnpm exec turbo dev --filter=rrs` và nhớ set flag `IsDaemon=true`) để khởi tạo lại thư mục build cho môi trường dev.
+- **Trước khi Build (BẮT BUỘC)**: Bất cứ khi nào bạn định chạy lệnh build dự án (ví dụ `pnpm build` hoặc `next build`) để kiểm tra, bạn **PHẢI tắt (kill) các task chạy Dev Server đang chạy ngầm** bằng công cụ `manage_task`.
+- **Sau khi Build xong (BẮT BUỘC)**: Sau khi tiến trình build kết thúc thành công, bạn **PHẢI nhớ chạy lại lệnh Dev Server** (ví dụ `pnpm exec turbo dev` hoặc `pnpm --filter ... dev` với tuỳ chọn `IsDaemon=true`) để hệ thống phục vụ lại trang web cho môi trường dev.
+
+**Quy trình chuẩn:**
+1. Chạy `manage_task` với action `list` để tìm các task Dev Server đang chạy.
+2. Chạy `manage_task` với action `kill` để tắt hoàn toàn các task đó.
+3. Chạy lệnh build (VD: `pnpm build`).
+4. (Chờ build xong).
+5. Chạy lệnh `run_command` để start lại Dev Server.
 
 ## Dấu hiệu nhận biết
 - Trình duyệt hiện dòng chữ: `missing required error components, refreshing...`
