@@ -27,6 +27,11 @@ Absolutely DO NOT import redundant frameworks that do not belong to the project.
 - **CRITICAL RULE**: Code inside `@aq-fe/aq-core-framework` **MUST NEVER** import anything from `@aq-fe/aq-legacy-framework`.
 - If the new backend needs a component, utility, or business logic similar to one present in the legacy framework (e.g., `CustomButtonImport`, `CustomButtonDelete`, `CustomApiSelect`), you **MUST clone and refactor** that component directly into `@aq-fe/aq-core-framework` (or a shared library independent of the legacy framework). You cannot reuse it directly from legacy.
 
+### 4. Package Versioning in package.json (No Caret `^` or Tilde `~`)
+- **CRITICAL RULE**: When adding or updating dependencies in `package.json` across any app or package, you **MUST NEVER use `^` or `~`**.
+- Always specify the exact version (e.g., `"fflate": "0.8.3"`, NOT `"^0.8.3"`).
+- When running `pnpm add`, always pass the `--save-exact` (or `-E`) flag.
+
 ---
 
 ### Important Note for Developers:
