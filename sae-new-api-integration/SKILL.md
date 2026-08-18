@@ -14,6 +14,9 @@ This skill explains how to build and maintain API services, manage server-state 
 > 
 > Khi cần gọi API về User hay cấu hình hệ thống chung thì gọi IAM, còn dữ liệu nghiệp vụ hoạt động thì gọi SAE-New. Always refer to these URLs when you need to read or integrate API endpoints.
 > 
+> **CRITICAL RULE: STRICT API DATA - NO HARDCODED / FAKE FALLBACK DATA**:
+> Khi hệ thống đã có API, tuyệt đối **không tự tạo dữ liệu tĩnh, mock array hoặc fake fallback string** trong code để 'chữa cháy'. Phải sử dụng đúng và trực tiếp dữ liệu do API Backend trả về (`api trả về gì luôn xài cái đó`).
+> 
 > **Backend Repository Path**: The backend source code is located locally at `D:\AQ-Project\SAE-Backend`. 
 > - **CRITICAL RULE**: Before reading or analyzing any backend code in `D:\AQ-Project\SAE-Backend`, you **MUST** run `git pull` or `git fetch` (using the `run_command` tool) in that directory to ensure you are working with the latest codebase.
 > - When integrating new APIs or if there is any ambiguity about the request/response schema, actively check the backend controllers, DTOs, and services in that directory to ensure exact alignment.
