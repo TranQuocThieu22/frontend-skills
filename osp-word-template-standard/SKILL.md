@@ -29,7 +29,8 @@ Khi cấu hình Content Control (Properties) trong Word, ô **Tag** phải đư�
   - `*`: Bắt buộc nhập (Báo đỏ nếu để trống).
   - `!`: Chỉ đọc (Tự động điền, không cho người dùng tự sửa).
   - `~`: Khung nhập nhiều dòng (Chỉ dùng với type `text` để sinh ra Textarea).
-- `group_name.` (Tùy chọn - Dành cho Tương lai): Dùng để nhóm dữ liệu thành mảng (ví dụ: bảng danh sách).
+  - `@`: Auto-fill (Gắn cờ báo hiệu đây là trường sẽ tự động lấy dữ liệu từ hệ thống/API, kèm icon minh hoạ trên Web).
+- `group_name(group_title).` (Tùy chọn): Dùng để nhóm dữ liệu thành mảng lặp (Ví dụ: danh sách môn học). `group_name` là khóa kỹ thuật gửi API (chữ thường không dấu), `group_title` trong ngoặc đơn là nhãn hiển thị của nhóm trên Web (Ví dụ: `ds_mon(Danh sách môn học).ma_mon`).
 
 ---
 
@@ -46,7 +47,7 @@ Khi cấu hình Content Control (Properties) trong Word, ô **Tag** phải đư�
 | **SĐT** | `field_name:phone` | Khung nhập văn bản, sẽ mở rộng validate SĐT. | `so_dien_thoai:phone` |
 | **Email** | `field_name:email` | Khung nhập văn bản, sẽ mở rộng validate Email. | `email_lien_he:email` |
 | **Dropdown tĩnh** | `field_name:select(key1:val1,key2:val2)` | Khung chọn 1 giá trị từ danh sách (Select). | `gioi_tinh:select(1:Nam,2:Nữ)` |
-| **Dropdown API** | `field_name:api(endpoint)` | *(Tính năng tương lai)* Lấy dữ liệu từ Backend. | `ma_nganh:api(dm_nganh)` |
+| **Dropdown API** | `field_name:api(endpoint)` | Lấy dữ liệu từ API Backend. Hỗ trợ `hoc_ky` và `hoc_phan` (hoặc `mon_hoc`). | `ky_hoc:api(hoc_ky)` |
 
 ### 3.2. Các cờ bổ trợ (Modifiers)
 
@@ -57,6 +58,26 @@ Các cờ này gắn trực tiếp vào cuối tên biến. Có thể kết hợ
 | `*` | **Bắt buộc (Required)** | Render dấu hoa thị đỏ, chặn xuất file nếu để trống. | `ho_ten*` |
 | `!` | **Chỉ đọc (Readonly)** | Render ô màu xám, khóa chỉnh sửa. (Dùng cho thông tin sinh viên). | `ma_sv!` |
 | `~` | **Nhiều dòng (Textarea)** | Thay vì khung nhập nhỏ, sẽ render khung text lớn tự động co giãn. | `ly_do:text~*` |
+| `@` | **Tự động điền (Auto-fill)** | Hiển thị icon tia chớp ⚡ hoặc đũa phép ở nhãn nhập liệu, báo hiệu dữ liệu tự động đồng bộ. | `ten_mon@!` |
+
+### 3.3. Cấu hình bảng lặp (Array/Table)
+
+Để hiển thị một bảng dữ liệu cho phép người dùng thêm/bớt dòng động trên Web (ví dụ: danh sách môn rút học phần, danh sách thiết bị v.v.), tất cả Content Control trong dòng đó phải được cấu hình tiền tố nhóm theo cú pháp:
+
+```text
+[group_name]([group_title]).[field_name]:[type][modifiers]
+```
+
+**Ví dụ cấu hình thực tế cho một dòng của bảng Danh sách môn học:**
+- Ở cột "Mã học phần", đặt Tag: `ds_mon(Danh sách môn).ma_hp:api(hoc_phan)*`
+- Ở cột "Tên môn học", đặt Tag: `ds_mon(Danh sách môn).ten_mon@!`
+- Ở cột "Số tín chỉ", đặt Tag: `ds_mon(Danh sách môn).so_tin_chi:number@!`
+
+**Giao diện sinh ra:** Hệ thống sẽ tự động hiển thị một Block có tiêu đề **"Danh sách môn"** kèm nút **"+ Thêm dòng"**, các ô nhập tương ứng sẽ được hiển thị gọn gàng bên dưới. Khi xuất file Word, hệ thống sẽ tự động nhân bản dòng dữ liệu này tương ứng với số dòng sinh viên nhập.
+
+#### Tính năng Auto-fill (Tự động điền) khi liên kết API:
+Khi bạn sử dụng kiểu dữ liệu `api(hoc_phan)` (hoặc `api(mon_hoc)`) cho cột mã học phần bên trong bảng dữ liệu mảng lặp (Ví dụ: `ds_mon(Danh sách môn).ma_mon:api(hoc_phan)`):
+- Khi sinh viên chọn một môn học từ danh sách, hệ thống sẽ tự động đối chiếu và điền **Tên môn học** (cho các cột có nhãn chứa chữ `ten_mon` hoặc `ten_hp`) và **Số tín chỉ** (cho các cột có nhãn chứa chữ `tin_chi` hoặc `so_tc`) trên cùng dòng đó. Sinh viên không cần phải tự gõ thủ công các thông tin này.
 
 ---
 
@@ -85,10 +106,14 @@ Dưới đây là một bảng mẫu về cách bạn nên cấu hình file Word
 | Yêu cầu thực tế | Cấu hình Title (Word) | Cấu hình Tag (Word) | UI kết quả |
 | :--- | :--- | :--- | :--- |
 | Sinh viên tự nhập **Lý do xin phép**, bắt buộc nhập và cần nhiều dòng. | `Trình bày lý do` | `ly_do:text~*` | Textarea, có sao đỏ `*`. |
-| Sinh viên tự chọn **Giới tính** (Nam/Nữ). | `Giới tính sinh viên` | `gioi_tinh:select(1:Nam,2:Nữ)` | Dropdown List với 2 option. |
-| Hiển thị **Mã SV**, lấy từ hệ thống, KHÔNG cho sinh viên sửa. | `Mã số sinh viên` | `mssv!` | TextInput khóa xám, tự động điền. |
-| Tự nhập **Ngày vắng thi**, bắt buộc. | `Ngày xin vắng` | `ngay_vang:date*` | DatePicker (Lịch), có sao đỏ `*`. |
+| Sinh viên tự chọn **Học kỳ**, tự động hiển thị Năm học đi kèm. | `Học kỳ` | `hoc_ky:api(hoc_ky)` và `nam_hoc!` | Dropdown chọn Học kỳ. Tự hiển thị Số kỳ (VD: `1`) và Năm học (VD: `2022-2023`) trên bản xem trước. |
 | Cam kết **Đồng ý điều khoản**, bắt buộc. | `Xác nhận cam kết` | `cam_ket:bool*` | Checkbox tích chọn. |
+
+> **Mẹo cấu hình Học kỳ & Năm học:** 
+> Chỉ cần tạo 2 ô Content Control trong Word:
+> 1. Ô Học kỳ đặt Tag: `hoc_ky:api(hoc_ky)` (trên Web sẽ sinh ra 1 Select duy nhất có danh sách dạng *"Học kỳ 1 - Năm học 2022-2023"*).
+> 2. Ô Năm học đặt Tag: `nam_hoc!` (chỉ đọc).
+> Hệ thống sẽ tự động bóc tách: ô Học kỳ trong Word chỉ hiển thị số học kỳ (ví dụ: `1`), còn ô Năm học tự điền năm học tương ứng (ví dụ: `2022-2023`).
 
 ---
 
