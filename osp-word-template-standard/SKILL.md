@@ -100,3 +100,9 @@ Dưới đây là một bảng mẫu về cách bạn nên cấu hình file Word
    - Ô **Title**: Điền tiêu đề hiển thị (VD: `Lý do xin rút môn`).
    - Ô **Tag**: Điền chuẩn cú pháp (VD: `ly_do:text~*`).
 4. **Lưu file** `.docx` và upload lên hệ thống.
+
+---
+
+## 7. Lưu ý về WPS Office
+
+Hệ thống hỗ trợ 100% file `.docx` tạo từ **WPS Office**. WPS có cấu trúc lưu XML hơi khác so với MS Word (các Content Control rỗng không có thẻ `<w:t>`). Các developer khi bảo trì code `DocxViewer` hoặc `extractFieldsFromWord` cần lưu ý tuyệt đối không dùng giả định: *Mọi SDT đều có thẻ `<w:t>` bên trong*. Luôn phải có logic fallback để tự tạo `<w:t>` nếu field trống.

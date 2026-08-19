@@ -10,11 +10,15 @@ Khi dự án Next.js đang được chạy ở chế độ phát triển (Dev Se
 
 Điều này dẫn đến việc Dev Server bị mất file và gây ra hàng loạt lỗi trên trình duyệt (như lỗi HTTP 500 Internal Server Error liên tục, hoặc thông báo `missing required error components, refreshing...` trên giao diện, và các lỗi `ENOENT` ở console).
 
-## Cách xử lý
-- **Trước khi Build (BẮT BUỘC)**: Bất cứ khi nào bạn định chạy lệnh build dự án (ví dụ `pnpm build` hoặc `next build`) để kiểm tra, bạn **PHẢI tắt (kill) các task chạy Dev Server đang chạy ngầm** bằng công cụ `manage_task`.
+## Nguyên tắc phát triển & Hot Reload
+- **KHÔNG chạy `next build` sau mỗi lần chỉnh sửa nhỏ**: Next.js Dev Server (Turbopack) đã hỗ trợ Fast Refresh / Hot Reload tự động cập nhật code ngay khi lưu file. Việc chạy `next build` liên tục sau mỗi chỉnh sửa nhỏ gây lãng phí thời gian và làm gián đoạn/xung đột với Dev Server đang chạy.
+- Chỉ chạy `next build` khi người dùng yêu cầu kiểm tra build tổng thể hoặc trước khi tạo bản release.
+
+## Cách xử lý khi cần Build
+- **Trước khi Build (BẮT BUỘC nếu có yêu cầu build)**: Bất cứ khi nào bạn định chạy lệnh build dự án (ví dụ `pnpm build` hoặc `next build`) để kiểm tra, bạn **PHẢI tắt (kill) các task chạy Dev Server đang chạy ngầm** bằng công cụ `manage_task`.
 - **Sau khi Build xong (BẮT BUỘC)**: Sau khi tiến trình build kết thúc thành công, bạn **PHẢI nhớ chạy lại lệnh Dev Server** (ví dụ `pnpm exec turbo dev` hoặc `pnpm --filter ... dev` với tuỳ chọn `IsDaemon=true`) để hệ thống phục vụ lại trang web cho môi trường dev.
 
-**Quy trình chuẩn:**
+**Quy trình chuẩn khi được yêu cầu build:**
 1. Chạy `manage_task` với action `list` để tìm các task Dev Server đang chạy.
 2. Chạy `manage_task` với action `kill` để tắt hoàn toàn các task đó.
 3. Chạy lệnh build (VD: `pnpm build`).
