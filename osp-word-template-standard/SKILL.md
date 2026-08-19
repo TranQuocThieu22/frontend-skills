@@ -75,9 +75,20 @@ Các cờ này gắn trực tiếp vào cuối tên biến. Có thể kết hợ
 
 **Giao diện sinh ra:** Hệ thống sẽ tự động hiển thị một Block có tiêu đề **"Danh sách môn"** kèm nút **"+ Thêm dòng"**, các ô nhập tương ứng sẽ được hiển thị gọn gàng bên dưới. Khi xuất file Word, hệ thống sẽ tự động nhân bản dòng dữ liệu này tương ứng với số dòng sinh viên nhập.
 
-#### Tính năng Auto-fill (Tự động điền) khi liên kết API:
-Khi bạn sử dụng kiểu dữ liệu `api(hoc_phan)` (hoặc `api(mon_hoc)`) cho cột mã học phần bên trong bảng dữ liệu mảng lặp (Ví dụ: `ds_mon(Danh sách môn).ma_mon:api(hoc_phan)`):
-- Khi sinh viên chọn một môn học từ danh sách, hệ thống sẽ tự động đối chiếu và điền **Tên môn học** (cho các cột có nhãn chứa chữ `ten_mon` hoặc `ten_hp`) và **Số tín chỉ** (cho các cột có nhãn chứa chữ `tin_chi` hoặc `so_tc`) trên cùng dòng đó. Sinh viên không cần phải tự gõ thủ công các thông tin này.
+#### Tính năng Auto-fill (Tự động điền) và Cơ chế Khớp Dữ Liệu:
+Khi cấu hình cờ `@` (ví dụ `ten_mon@!`), hệ thống Web sẽ không yêu cầu sinh viên tự nhập mà sẽ tự động điền giá trị dựa vào trường API Select nằm cùng cấp (ví dụ `ma_mon:api(hoc_phan)`).
+
+**Quy tắc ưu tiên tự động điền (Ví dụ cho API `hoc_phan`):**
+1. **Khớp chính xác (Exact Mapping - Khuyên dùng):** Hệ thống sẽ ưu tiên tìm trong cấu trúc JSON trả về từ API xem có thuộc tính nào trùng tên chính xác với `field_name` của bạn hay không. 
+   - Ví dụ: API trả về object `{ "ma_mon": "IT123", "ten_mon": "Toán", "so_tin_chi": 3, "nhom_to": "01" }`.
+   - Nếu bạn đặt Tag là `ds_mon.so_tin_chi@!`, hệ thống tự động điền `3`.
+   - Nếu bạn đặt Tag là `ds_mon.nhom_to@!`, hệ thống tự điền `"01"`.
+
+2. **Khớp tương đối (Heuristic Fallback):** Nếu không tìm thấy key chính xác, hệ thống sẽ cố gắng đoán nội dung thông qua tên thẻ của bạn:
+   - Nếu tên thẻ chứa `ten_mon` hoặc `ten_hp`: Lấy tên môn học.
+   - Nếu tên thẻ chứa `ma_mon` hoặc `ma_hp`: Lấy mã môn học.
+   - Nếu tên thẻ chứa `tin_chi` hoặc `so_tc`: Lấy số tín chỉ.
+   - Nếu tên thẻ chứa `nhom_to`, `nhom_hp`, hoặc `nhom`: Lấy nhóm tổ.
 
 ---
 
@@ -99,21 +110,41 @@ Hệ thống sẽ **tự động** lấy thông tin cá nhân của người dù
 
 ---
 
-## 5. Ví Dụ Cấu Hình Chuẩn (Thực Tế)
+## 5. Đặc tả API Select và Thuộc tính tự động điền (Auto-fill Properties)
 
-Dưới đây là một bảng mẫu về cách bạn nên cấu hình file Word để đạt hiệu quả tốt nhất:
+Hệ thống cung cấp một số API chuyên dụng để tự động kéo dữ liệu (ví dụ: Học kỳ, Học phần). Để dữ liệu đồng bộ chính xác giữa Form và Word, hãy dùng đúng tên biến (field_name).
 
-| Yêu cầu thực tế | Cấu hình Title (Word) | Cấu hình Tag (Word) | UI kết quả |
+### 5.1. API `hoc_ky`
+- **Cách dùng chính:** Đặt Tag `hoc_ky:api(hoc_ky)`.
+- **Hoạt động:** Hiển thị dropdown chứa danh sách các học kỳ, ví dụ "Học kỳ 1 - 2023-2024". Khi xuất Word, thẻ này sẽ hiển thị số Học kỳ (vd: `1`).
+- **Auto-fill liên quan:** 
+  - `nam_hoc` (Năm học): Khi người dùng chọn một học kỳ, nếu trong mẫu Word có Content Control mang Tag `nam_hoc!` hoặc `nam_hoc@!`, hệ thống tự động trích xuất chuỗi năm học (vd: `2023-2024`) và điền vào thẻ này.
+
+### 5.2. API `hoc_phan` (hoặc `mon_hoc`)
+- **Cách dùng chính:** Đặt Tag `ma_mon:api(hoc_phan)*` hoặc `ma_hp:api(hoc_phan)*`. Thường đặt trong bảng lặp (Array).
+- **Hoạt động:** Hiển thị dropdown tìm kiếm toàn bộ danh sách điểm và danh mục môn học của sinh viên. Tùy vào tên thẻ (chứa chữ `ten` hay không) mà giao diện sẽ cho tìm theo Tên hay Mã môn.
+- **Các thuộc tính Auto-fill (`@`) trả về từ API:**
+  Khi cấu hình các thẻ cùng cấp (cùng 1 dòng trong bảng), bạn có thể dùng các tên thẻ sau kèm cờ `@!` để lấy thẳng dữ liệu từ API:
+  - `ma_mon` hoặc `ma_hp`: Mã môn học (vd: "IT123").
+  - `ten_mon` hoặc `ten_hp`: Tên môn học (vd: "Kế toán doanh nghiệp mỏ").
+  - `so_tin_chi` hoặc `tin_chi`: Số tín chỉ (vd: "3").
+  - `nhom_to` hoặc `nhom`: Nhóm tổ (vd: "01").
+
+---
+
+## 6. Tổng hợp Ví Dụ Cấu Hình Chuẩn (Thực Tế)
+
+Dưới đây là bảng ví dụ tổng hợp cho **tất cả** các trường hợp thiết lập Tag phổ biến, đảm bảo tương thích 100% với WPS Office và hệ thống tự động điền:
+
+| Yêu cầu / Ngữ cảnh | Cấu hình Title (Nhãn) | Cấu hình Tag (Data & Cấu hình) | Kết quả UI / Word |
 | :--- | :--- | :--- | :--- |
-| Sinh viên tự nhập **Lý do xin phép**, bắt buộc nhập và cần nhiều dòng. | `Trình bày lý do` | `ly_do:text~*` | Textarea, có sao đỏ `*`. |
-| Sinh viên tự chọn **Học kỳ**, tự động hiển thị Năm học đi kèm. | `Học kỳ` | `hoc_ky:api(hoc_ky)` và `nam_hoc!` | Dropdown chọn Học kỳ. Tự hiển thị Số kỳ (VD: `1`) và Năm học (VD: `2022-2023`) trên bản xem trước. |
-| Cam kết **Đồng ý điều khoản**, bắt buộc. | `Xác nhận cam kết` | `cam_ket:bool*` | Checkbox tích chọn. |
-
-> **Mẹo cấu hình Học kỳ & Năm học:** 
-> Chỉ cần tạo 2 ô Content Control trong Word:
-> 1. Ô Học kỳ đặt Tag: `hoc_ky:api(hoc_ky)` (trên Web sẽ sinh ra 1 Select duy nhất có danh sách dạng *"Học kỳ 1 - Năm học 2022-2023"*).
-> 2. Ô Năm học đặt Tag: `nam_hoc!` (chỉ đọc).
-> Hệ thống sẽ tự động bóc tách: ô Học kỳ trong Word chỉ hiển thị số học kỳ (ví dụ: `1`), còn ô Năm học tự điền năm học tương ứng (ví dụ: `2022-2023`).
+| **1. Thông tin sinh viên (Auto-sync)** | `Họ và tên` | `ho_ten!` | Text xám (chỉ đọc), điền sẵn thông tin. |
+| **2. Bắt buộc nhập, nhiều dòng** | `Lý do xin phép` | `ly_do:text~*` | Textarea, có sao đỏ `*`. |
+| **3. Dropdown tĩnh** | `Ca học` | `ca_hoc:select(1:Sáng,2:Chiều)*` | Select tĩnh (Sáng / Chiều). |
+| **4. Chọn Học kỳ & tự điền Năm học** | `Học kỳ` (Ô 1) <br> `Năm học` (Ô 2) | `hoc_ky:api(hoc_ky)` <br> `nam_hoc@!` | Ô Học kỳ cho phép chọn API. Ô Năm học tự động điền (VD: `2023-2024`). |
+| **5. Bảng: Thêm danh sách môn (Có API)** | `Mã học phần` (Cột 1) <br> `Tên môn` (Cột 2) <br> `Số TC` (Cột 3) <br> `Nhóm` (Cột 4) | `ds_mon.ma_hp:api(hoc_phan)*` <br> `ds_mon.ten_mon@!` <br> `ds_mon.so_tin_chi@!` <br> `ds_mon.nhom_to@!` | Nút `+ Thêm dòng`. Khi chọn mã môn ở Cột 1, Cột 2, 3, 4 tự động được điền dữ liệu (có icon ⚡ auto-fill). |
+| **6. Checkbox xác nhận** | `Cam kết` | `cam_ket:bool*` | Ô Checkbox bắt buộc tích. |
+| **7. Nhập Ngày tháng** | `Ngày nộp` | `ngay_nop:date*` | Bảng DatePicker. |
 
 ---
 
