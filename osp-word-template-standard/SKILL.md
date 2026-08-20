@@ -114,14 +114,21 @@ Hệ thống sẽ **tự động** lấy thông tin cá nhân của người dù
 
 Hệ thống cung cấp một số API chuyên dụng để tự động kéo dữ liệu (ví dụ: Học kỳ, Học phần). Để dữ liệu đồng bộ chính xác giữa Form và Word, hãy dùng đúng tên biến (field_name).
 
+> **💡 MẸO - Magic Keys (Cú pháp viết tắt / Auto-inference):**
+> Để tăng tốc độ làm mẫu Word, hệ thống hỗ trợ tự động nội suy (auto-inference) cho các biến phổ biến. 
+> - Nếu bạn đặt đúng tên biến là `hoc_ky` (ví dụ `hoc_ky` hoặc `hoc_ky*`), hệ thống sẽ tự động ngầm hiểu là `hoc_ky:api(hoc_ky)`. Bạn không cần gõ dài dòng!
+> - Nếu bạn muốn đặt tên biến khác đi (ví dụ `ky_bat_dau`), bạn **vẫn phải** dùng cú pháp tường minh `ky_bat_dau:api(hoc_ky)` để gọi API.
+
 ### 5.1. API `hoc_ky`
-- **Cách dùng chính:** Đặt Tag `hoc_ky:api(hoc_ky)`.
+- **Cách dùng viết tắt (Khuyên dùng):** Chỉ cần đặt Tag là `hoc_ky` (nếu bắt buộc thì `hoc_ky*`). Hệ thống tự ép kiểu thành Select API.
+- **Cách dùng tường minh:** Đặt Tag `ky_hoc:api(hoc_ky)` (dành cho khi bạn muốn dùng tên biến khác `hoc_ky`).
 - **Hoạt động:** Hiển thị dropdown chứa danh sách các học kỳ, ví dụ "Học kỳ 1 - 2023-2024". Khi xuất Word, thẻ này sẽ hiển thị số Học kỳ (vd: `1`).
 - **Auto-fill liên quan:** 
   - `nam_hoc` (Năm học): Khi người dùng chọn một học kỳ, nếu trong mẫu Word có Content Control mang Tag `nam_hoc!` hoặc `nam_hoc@!`, hệ thống tự động trích xuất chuỗi năm học (vd: `2023-2024`) và điền vào thẻ này.
 
 ### 5.2. API `hoc_phan` (hoặc `mon_hoc`)
-- **Cách dùng chính:** Đặt Tag `ma_mon:api(hoc_phan)*` hoặc `ma_hp:api(hoc_phan)*`. Thường đặt trong bảng lặp (Array).
+- **Cách dùng viết tắt:** Chỉ cần đặt Tag `ma_mon*`. Hệ thống sẽ tự động ép kiểu thành `api(hoc_phan)`.
+- **Cách dùng tường minh:** Đặt Tag `mon_hoc_thay_the:api(hoc_phan)*` (dành cho tên biến tùy chỉnh).
 - **Hoạt động:** Hiển thị dropdown tìm kiếm toàn bộ danh sách điểm và danh mục môn học của sinh viên. Tùy vào tên thẻ (chứa chữ `ten` hay không) mà giao diện sẽ cho tìm theo Tên hay Mã môn.
 - **Các thuộc tính Auto-fill (`@`) trả về từ API:**
   Khi cấu hình các thẻ cùng cấp (cùng 1 dòng trong bảng), bạn có thể dùng các tên thẻ sau kèm cờ `@!` để lấy thẳng dữ liệu từ API:
