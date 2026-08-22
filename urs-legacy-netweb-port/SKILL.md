@@ -1,11 +1,11 @@
 ---
-name: osp-legacy-netweb-port
-description: Quy trình port một màn hình từ dự án Angular netweb cũ sang app OSP (Next.js + Mantine) - tìm code nguồn, dùng đúng API legacy, dựng bảng/form theo core-ui và quy ước đặt bộ lọc.
+name: urs-legacy-netweb-port
+description: Quy trình port một màn hình từ dự án Angular netweb cũ sang app URS (Next.js + Mantine) - tìm code nguồn, dùng đúng API legacy, dựng bảng/form theo core-ui và quy ước đặt bộ lọc.
 ---
 
-# Port màn hình từ netweb (Angular) sang OSP (Next.js)
+# Port màn hình từ netweb (Angular) sang URS (Next.js)
 
-Dùng khi có yêu cầu dạng "kiểm tra code màn hình X bên netweb cũ và tích hợp cho OSP".
+Dùng khi có yêu cầu dạng "kiểm tra code màn hình X bên netweb cũ và tích hợp cho URS".
 
 ## 1. Tìm code nguồn bên netweb
 
@@ -30,7 +30,7 @@ Một nghiệp vụ thường có 2 nhóm API khác nhau — **rất dễ nhầm
 
 Nếu dùng nhầm API người dùng cuối cho màn quản trị, các cột nhóm/đối tượng sẽ trống và các select trong form không có dữ liệu.
 
-Quy ước gọi API trong OSP (`src/features/<feature>/api/<ten>.api.ts`):
+Quy ước gọi API trong URS (`src/features/<feature>/api/<ten>.api.ts`):
 
 ```ts
 const getApiBase = () => (APP_CONFIG.isDevMode ? "/api" : APP_CONFIG.apiUrl);
@@ -40,7 +40,7 @@ axiosInstance.post(`${getApiBase()}/sms/w-locdanhmucloaidichvu`, '', { baseURL: 
 
 - `baseURL: ''` là bắt buộc để interceptor không nối thêm base lần nữa.
 - Giữ **nguyên body** như netweb gửi (nhiều endpoint legacy nhận body rỗng `''`, hoặc query string như `?idgcn=...`).
-- Dev mode đi qua proxy khai báo ở `apps/osp/src/middleware.ts` (matcher `/api/:path*`), không có rewrite trong `next.config.ts`.
+- Dev mode đi qua proxy khai báo ở `apps/urs/src/middleware.ts` (matcher `/api/:path*`), không có rewrite trong `next.config.ts`.
 - API legacy trả lỗi **trong payload 200**: luôn kiểm tra `res.data.code === 200` chứ không chỉ HTTP status.
 - File đã lưu trên server xem qua `${apiBase}/fileManager?src=<url_file>`; file mới upload gửi base64 (bỏ tiền tố `data:...;base64,`).
 
@@ -54,7 +54,7 @@ API legacy chỉ trả id, phần hiển thị phải tự ghép — bê nguyên
 - Cờ boolean từ backend có thể là `true/1/'1'` → dùng helper `isTruthyFlag`.
 - Ngày: API trả `dd/MM/yyyy`, Mantine DateInput dùng `yyyy-MM-dd`, body lưu gửi `yyyy-MM-dd`.
 
-## 4. Cấu trúc feature trong OSP
+## 4. Cấu trúc feature trong URS
 
 ```
 src/features/<feature>/
@@ -87,7 +87,7 @@ Component dùng lại từ `@aq-fe/core-ui/shared/components`: `CustomTanstackTa
 
 ## 6. Modal thêm/sửa/xem
 
-Bản cũ dùng `loai_thaotac`: `1 = thêm`, `2 = xem`, `3 = sửa`. Trong OSP đổi thành prop `mode: 'create' | 'update' | 'view'`:
+Bản cũ dùng `loai_thaotac`: `1 = thêm`, `2 = xem`, `3 = sửa`. Trong URS đổi thành prop `mode: 'create' | 'update' | 'view'`:
 
 - `view`: khóa toàn bộ input, ẩn nút Lưu.
 - `update`: khóa trường mã (`ma_gcn`), các trường khác mở.
@@ -97,4 +97,4 @@ Bản cũ dùng `loai_thaotac`: `1 = thêm`, `2 = xem`, `3 = sửa`. Trong OSP �
 
 - Gỡ mock data cũ của màn hình (`shared/mockData.ts`) khi đã nối API thật.
 - Gỡ cờ `isPrototype: true` của route tương ứng trong `src/shared/configs/routes.config.tsx` (cờ này chỉ hiện badge "P" ở sidebar).
-- Chạy `npx tsc --noEmit -p tsconfig.json` trong `apps/osp` và lọc lỗi theo tên feature — repo còn nhiều lỗi type cũ ở feature khác, đừng nhận nhầm.
+- Chạy `npx tsc --noEmit -p tsconfig.json` trong `apps/urs` và lọc lỗi theo tên feature — repo còn nhiều lỗi type cũ ở feature khác, đừng nhận nhầm.
