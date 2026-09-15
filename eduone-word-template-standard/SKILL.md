@@ -1,11 +1,11 @@
 ---
-name: urs-word-template-standard
-description: Hướng dẫn cấu trúc Tag và chuẩn hóa file Word Template để sinh UI tự động trong hệ thống URS (Đơn từ).
+name: eduone-word-template-standard
+description: Hướng dẫn cấu trúc Tag và chuẩn hóa file Word Template để sinh UI tự động trong hệ thống EduOne (Đơn từ).
 ---
 
-# Chuẩn Hóa Cấu Trúc File Word Template (URS)
+# Chuẩn Hóa Cấu Trúc File Word Template (EduOne)
 
-Hệ thống URS sử dụng tính năng **Rich Text Content Control** (hoặc Plain Text Content Control) của Microsoft Word để nhúng các biến dữ liệu. Dựa vào các biến này, hệ thống sẽ tự động sinh ra Form nhập liệu (Dynamic UI) tương ứng trên giao diện Web.
+Hệ thống EduOne sử dụng tính năng **Rich Text Content Control** (hoặc Plain Text Content Control) của Microsoft Word để nhúng các biến dữ liệu. Dựa vào các biến này, hệ thống sẽ tự động sinh ra Form nhập liệu (Dynamic UI) tương ứng trên giao diện Web.
 
 Tài liệu này quy định cú pháp chuẩn để thiết lập **Title (Nhãn)** và **Tag (Dữ liệu & Cấu hình)**.
 
