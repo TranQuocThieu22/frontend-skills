@@ -1,171 +1,448 @@
 ---
 name: eduone-word-template-standard
-description: Hướng dẫn cấu trúc Tag và chuẩn hóa file Word Template để sinh UI tự động trong hệ thống EduOne (Đơn từ).
+description: Quy tắc đặt Title và Tag cho file Word mẫu của EduOne (đơn từ), danh sách các tên biến hệ thống tự điền, để hệ thống tự sinh form nhập liệu và xuất đơn.
 ---
 
-# Chuẩn Hóa Cấu Trúc File Word Template (EduOne)
+# Chuẩn mẫu Word của EduOne
 
-Hệ thống EduOne sử dụng tính năng **Rich Text Content Control** (hoặc Plain Text Content Control) của Microsoft Word để nhúng các biến dữ liệu. Dựa vào các biến này, hệ thống sẽ tự động sinh ra Form nhập liệu (Dynamic UI) tương ứng trên giao diện Web.
+Người soạn mẫu đặt biến vào file `.docx` bằng **Content Control** của Word. Hệ thống đọc các biến này để:
 
-Tài liệu này quy định cú pháp chuẩn để thiết lập **Title (Nhãn)** và **Tag (Dữ liệu & Cấu hình)**.
+1. Tự sinh form nhập liệu trên web cho sinh viên.
+2. Ghi giá trị sinh viên nhập ngược lại vào file Word khi nộp đơn.
 
-## 1. Nguyên lý Thiết kế (Separation of Concerns)
+> **Bản gốc** của tài liệu nằm ở `apps/eduone/docs/eduone-word-template-standard.md`. File
+> `.agents/skills/eduone-word-template-standard/SKILL.md` là bản sao y hệt cho AI agent — sửa bên nào
+> thì chép sang bên kia.
+>
+> **Dành cho lập trình viên:** mọi hằng số (kiểu dữ liệu, khóa tự điền, nguồn API, nhãn nhóm) khai
+> báo tại `apps/eduone/src/features/service-registration/shared/templateSchema.ts`. Thêm hoặc đổi thì
+> sửa ở đó rồi cập nhật tài liệu này.
 
-- **Title (Tiêu đề)**: Chuyên dùng để hiển thị nhãn (Label) và Placeholder trên giao diện Web. Ví dụ: `Họ và tên sinh viên`.
-- **Tag (Thẻ)**: Chuyên dùng để định nghĩa kiểu dữ liệu (Schema), cơ chế kiểm tra (Validation), và biến dữ liệu gửi về API. Bạn **bắt buộc** phải tuân thủ cú pháp Tag.
+---
 
-## 2. Cú pháp Tag Tổng Quát
+## 0. Tra cứu nhanh — các tên biến hệ thống hiểu sẵn
 
-Khi cấu hình Content Control (Properties) trong Word, ô **Tag** phải được nhập theo cú pháp sau:
-```text
-[group_name.][field_name]:[type]([options])?[modifiers]
+Đặt Tag **đúng y** các tên dưới đây thì hệ thống tự làm việc tương ứng. Mọi tên khác đều là ô sinh
+viên tự nhập, theo kiểu dữ liệu bạn khai (mục 3).
+
+### A. Tự điền từ hồ sơ sinh viên
+
+| Tên biến | Nội dung | Tag khuyên dùng |
+| :--- | :--- | :--- |
+| `ho_ten` | Họ và tên | `ho_ten!` |
+| `ma_sv` | Mã sinh viên | `ma_sv!` |
+| `ngay_sinh` | Ngày sinh | `ngay_sinh:date!` |
+| `noi_sinh` | Nơi sinh | `noi_sinh!` |
+| `lop` | Lớp | `lop!` |
+| `nien_khoa` | Niên khóa | `nien_khoa!` |
+| `khoa` | Khoa quản lý | `khoa!` |
+| `nganh` | Ngành | `nganh!` |
+| `dien_thoai` | Điện thoại | `dien_thoai` |
+| `email` | Email | `email` |
+| `so_cmnd` | Số CMND | `so_cmnd` |
+| `ngay_cap_cmnd` | Ngày cấp CMND | `ngay_cap_cmnd:date` |
+| `noi_cap_cmnd` | Nơi cấp CMND | `noi_cap_cmnd` |
+| `so_cccd` | Số CCCD | `so_cccd` |
+| `ngay_cap_cccd` | Ngày cấp CCCD | `ngay_cap_cccd:date` |
+| `noi_cap_cccd` | Nơi cấp CCCD | `noi_cap_cccd` |
+| `so_ho_chieu` | Số hộ chiếu | `so_ho_chieu` |
+| `ngay_cap_ho_chieu` | Ngày cấp hộ chiếu | `ngay_cap_ho_chieu:date` |
+| `ngay_het_han_ho_chieu` | Ngày hết hạn hộ chiếu | `ngay_het_han_ho_chieu:date` |
+
+Chi tiết và lưu ý ở [mục 5](#5-thông-tin-sinh-viên-tự-điền).
+
+### B. Dropdown lấy dữ liệu từ hệ thống
+
+| Tên biến | Sinh ra | Ghi ra file Word |
+| :--- | :--- | :--- |
+| `hoc_ky` | Dropdown học kỳ của sinh viên | Số kỳ, ví dụ `1` |
+| `ma_mon` | Dropdown môn học của sinh viên | Mã môn, ví dụ `IT123` |
+
+Chi tiết ở [mục 6](#6-học-kỳ-và-môn-học).
+
+### C. Tự điền theo ô khác
+
+| Tên biến | Điền khi nào | Giá trị |
+| :--- | :--- | :--- |
+| `nam_hoc` | Mẫu có ô `hoc_ky` và sinh viên đã chọn học kỳ | `2023-2024` |
+| `ten_mon` | Nằm **cùng dòng bảng lặp** với ô `ma_mon`, sinh viên đã chọn môn | Tên môn |
+| `so_tin_chi` | như trên | Số tín chỉ |
+| `nhom_to` | như trên | Nhóm tổ |
+| `ten_mon_eg` | như trên — chỉ có với môn **đã có điểm** | Tên môn tiếng Anh |
+
+Chỉ nhận **đúng** các tên trên. `ma_hp`, `ten_hp`, `tin_chi`, `nhom`, `fullname`, `mssv`, `class`,
+`ngay_cap`... đều **không** được điền tự động.
+
+---
+
+## 1. Hai ô cần điền trong Word
+
+Mỗi Content Control có hai ô trong **Properties**:
+
+| Ô | Vai trò | Ví dụ |
+| :--- | :--- | :--- |
+| **Title** | Nhãn hiển thị cho sinh viên. Đặt tự do, có dấu tiếng Việt. | `Lý do xin nghỉ học` |
+| **Tag** | Định nghĩa cho máy: tên biến, kiểu dữ liệu, cờ. **Phải đúng cú pháp.** | `ly_do:textarea*` |
+
+**Luôn điền cả hai ô.** Bỏ trống Tag thì hệ thống lấy Title làm tên biến, chữ có dấu và khoảng trắng
+bị đổi thành `_`: `Họ và tên` thành biến `h__v__t_n`. Vẫn chạy, nhưng sẽ **không** được tự điền và
+không ai đọc hiểu được tên biến đó.
+
+---
+
+## 2. Cú pháp Tag
+
+```
+[nhóm(Tiêu đề nhóm).]tên_biến[:kiểu[(tham số)]][cờ]
 ```
 
-**Trong đó:**
-- `field_name` (Bắt buộc): Tên biến JSON sẽ gửi về Backend (Ví dụ: `ho_ten`, `ly_do`). Khuyến nghị dùng chữ thường và gạch dưới (snake_case).
-- `type` (Tùy chọn): Kiểu dữ liệu để sinh UI (`text`, `number`, `date`, `phone`, `email`, `bool`, `select`, `api`). Mặc định là `text`.
-- `options` (Tùy chọn): Tham số cấu hình cho `type`. Ví dụ cấu hình danh sách dropdown: `(1:Nam,2:Nữ)`.
-- `modifiers` (Tùy chọn): Cờ bổ trợ điều khiển hành vi:
-  - `*`: Bắt buộc nhập (Báo đỏ nếu để trống).
-  - `!`: Chỉ đọc (Tự động điền, không cho người dùng tự sửa).
-  - `~`: Khung nhập nhiều dòng (Chỉ dùng với type `text` để sinh ra Textarea).
-  - `@`: Auto-fill (Gắn cờ báo hiệu đây là trường sẽ tự động lấy dữ liệu từ hệ thống/API, kèm icon minh hoạ trên Web).
-- `group_name(group_title).` (Tùy chọn): Dùng để nhóm dữ liệu thành mảng lặp (Ví dụ: danh sách môn học). `group_name` là khóa kỹ thuật gửi API (chữ thường không dấu), `group_title` trong ngoặc đơn là nhãn hiển thị của nhóm trên Web (Ví dụ: `ds_mon(Danh sách môn học).ma_mon`).
+Chỉ **tên_biến** là bắt buộc. Tách một Tag đầy đủ ra từng phần:
+
+```
+ds_mon(Danh sách môn học).ma_mon:api(hoc_phan)*#2
+└──────────┬────────────┘ └─┬──┘ └─────┬─────┘└┬┘
+   nhóm (bảng lặp)      tên biến  kiểu + tham số  cờ: * bắt buộc, #2 hiện ở vị trí 2
+```
+
+Một số Tag hay gặp:
+
+```
+ho_ten!                            → ô chữ, tự điền họ tên, khóa sửa
+ly_do:textarea*                    → khung nhiều dòng, bắt buộc
+ngay_nghi:date*                    → chọn ngày, bắt buộc
+so_tien:number                     → ô nhập số
+cam_ket:bool*                      → ô tích chọn
+ca_hoc:select(Sáng,Chiều)*         → dropdown cố định
+hoc_ky*                            → dropdown học kỳ
+ds_mon(Danh sách môn học).ma_mon*  → cột "mã môn" trong bảng lặp
+```
+
+**Quy tắc đặt tên biến:** chữ thường, không dấu, ngăn cách bằng `_` (`ho_ten`, `so_tin_chi`). Ký
+tự khác bị đổi thành `_`.
 
 ---
 
-## 3. Bảng Tham Chiếu Kiểu Dữ Liệu & Modifiers
+## 3. Kiểu dữ liệu
 
-### 3.1. Các kiểu dữ liệu (Types)
-
-| Type | Cú pháp trong Tag | Ý nghĩa & Giao diện sinh ra (UI) | Ví dụ |
+| Kiểu | Giao diện sinh ra | Ghi ra file Word | Ví dụ Tag |
 | :--- | :--- | :--- | :--- |
-| **Văn bản** | `field_name:text` (hoặc `field_name`) | Khung nhập chuỗi (TextInput). | `noi_sinh:text` |
-| **Số** | `field_name:number` | Khung nhập chỉ cho phép số. | `so_tin_chi:number` |
-| **Ngày tháng** | `field_name:date` | Hiển thị bảng chọn lịch (DatePicker) chuẩn DD/MM/YYYY. | `ngay_sinh:date` |
-| **Đúng/Sai** | `field_name:bool` | Ô tích chọn (Checkbox). | `xac_nhan:bool` |
-| **SĐT** | `field_name:phone` | Khung nhập văn bản, sẽ mở rộng validate SĐT. | `so_dien_thoai:phone` |
-| **Email** | `field_name:email` | Khung nhập văn bản, sẽ mở rộng validate Email. | `email_lien_he:email` |
-| **Dropdown tĩnh** | `field_name:select(key1:val1,key2:val2)` | Khung chọn 1 giá trị từ danh sách (Select). | `gioi_tinh:select(1:Nam,2:Nữ)` |
-| **Dropdown API** | `field_name:api(endpoint)` | Lấy dữ liệu từ API Backend. Hỗ trợ `hoc_ky` và `hoc_phan` (hoặc `mon_hoc`). | `ky_hoc:api(hoc_ky)` |
+| `text` *(mặc định)* | Ô nhập chữ một dòng | Chữ đã nhập | `noi_tam_tru` |
+| `textarea` | Khung nhập nhiều dòng, tự co giãn | Chữ đã nhập | `ly_do:textarea` |
+| `number` | Ô nhập số | Số, **không** có dấu phân cách hàng nghìn (`1500000`) | `so_tien:number` |
+| `date` | Bảng chọn lịch | `DD/MM/YYYY` | `ngay_nop:date` |
+| `bool` | Ô tích chọn | `☑` hoặc `☐` | `cam_ket:bool` |
+| `phone` | Ô nhập chữ *(chưa kiểm tra định dạng)* | Chữ đã nhập | `sdt_phu_huynh:phone` |
+| `email` | Ô nhập chữ *(chưa kiểm tra định dạng)* | Chữ đã nhập | `email_lien_he:email` |
+| `select` | Dropdown danh sách cố định | Xem bên dưới | `ca_hoc:select(Sáng,Chiều)` |
+| `api` | Dropdown lấy dữ liệu từ hệ thống | Xem [mục 6](#6-học-kỳ-và-môn-học) | `ky_hoc:api(hoc_ky)` |
+| `array` | Bảng thêm/bớt dòng — **không viết tay**, xem [mục 7](#7-bảng-lặp) | — | — |
 
-### 3.2. Các cờ bổ trợ (Modifiers)
+Gõ sai tên kiểu (ví dụ `:datetime`, `:text~`) thì tự lùi về `text` và ghi cảnh báo
+`[EduOne Template]` trong Console trình duyệt (F12). Đơn vẫn nộp được, nhưng nên sửa.
 
-Các cờ này gắn trực tiếp vào cuối tên biến. Có thể kết hợp nhiều cờ (VD: `~*` là Textarea bắt buộc nhập).
+### Danh sách lựa chọn của `select`
 
-| Cờ | Ý nghĩa | Hành vi trên UI | Cú pháp ví dụ |
+| Cách viết | Dropdown hiện | Lưu và ghi ra Word |
+| :--- | :--- | :--- |
+| `select(Sáng,Chiều)` | Sáng / Chiều | `Sáng` / `Chiều` |
+| `select(1:Sáng,2:Chiều)` | Sáng / Chiều | `1` / `2` |
+
+> **Khuyên dùng dạng rút gọn** `select(Sáng,Chiều)`. Với dạng `giá_trị:nhãn`, file Word và màn xử lý
+> thủ tục hiện **mã** (`1`, `2`) chứ không hiện nhãn — chỉ dùng khi thật sự cần lưu mã.
+
+Nhãn chứa dấu phẩy hoặc hai chấm thì đặt `\` phía trước:
+`select(Còn hạn,Hết hạn\, cần gia hạn)`.
+
+---
+
+## 4. Cờ
+
+Gắn vào **cuối** Tag, sau phần kiểu. Ghép được nhiều cờ, thứ tự bất kỳ (`@!` và `!@` như nhau).
+
+| Cờ | Tên | Tác dụng thực tế | Ví dụ |
 | :---: | :--- | :--- | :--- |
-| `*` | **Bắt buộc (Required)** | Render dấu hoa thị đỏ, chặn xuất file nếu để trống. | `ho_ten*` |
-| `!` | **Chỉ đọc (Readonly)** | Render ô màu xám, khóa chỉnh sửa. (Dùng cho thông tin sinh viên). | `ma_sv!` |
-| `~` | **Nhiều dòng (Textarea)** | Thay vì khung nhập nhỏ, sẽ render khung text lớn tự động co giãn. | `ly_do:text~*` |
-| `@` | **Tự động điền (Auto-fill)** | Hiển thị icon tia chớp ⚡ hoặc đũa phép ở nhãn nhập liệu, báo hiệu dữ liệu tự động đồng bộ. | `ten_mon@!` |
+| `*` | Bắt buộc | Hiện dấu `*` đỏ cạnh nhãn. ⚠️ Hiện **chưa chặn** lưu khi bỏ trống. | `ly_do:textarea*` |
+| `!` | Chỉ đọc | Ô bị khóa (xám), sinh viên không sửa được | `ma_sv!` |
+| `@` | Hệ thống điền | Báo đây là ô do hệ thống điền. Ở chế độ **"Chỉ nhập liệu"** ô này bị ẩn khỏi danh sách cho gọn (giá trị vẫn ghi ra file) | `ten_mon@!` |
+| `#` | Hiện ở danh sách | Đưa trường vào cột **Dữ liệu từ file** của màn xử lý thủ tục | `ly_do:textarea#` |
+| `#N` | Hiện, ép vị trí | Như `#`, nhưng đứng ở vị trí `N` | `ly_do:textarea#2` |
 
-### 3.3. Cấu hình bảng lặp (Array/Table)
+✅ `ly_do:textarea*` — ❌ `ly_do*:textarea` (cờ đứng trước kiểu sẽ bị hiểu thành một phần tên biến).
 
-Để hiển thị một bảng dữ liệu cho phép người dùng thêm/bớt dòng động trên Web (ví dụ: danh sách môn rút học phần, danh sách thiết bị v.v.), tất cả Content Control trong dòng đó phải được cấu hình tiền tố nhóm theo cú pháp:
+Cờ `~` (khung nhiều dòng) của bản chuẩn cũ **đã bỏ** — dùng kiểu `textarea`. Tag cũ `ly_do:text~*` giờ
+chỉ ra ô một dòng kèm cảnh báo.
 
-```text
-[group_name]([group_title]).[field_name]:[type][modifiers]
+**Nên dùng `@!` cho mọi ô do hệ thống điền** (năm học, tên môn, số tín chỉ...): `!` để sinh viên
+không sửa sai, `@` để form gọn lại.
+
+### Cờ `#` — trường hiện ở màn xử lý thủ tục
+
+Cán bộ xử lý cần xem nhanh vài thông tin chính ngay trên danh sách, không phải mở từng đơn:
+
+```
+Title: Lý do xin rút   Tag: ly_do:textarea*#
+Title: Từ ngày         Tag: tu_ngay:date#
+Title: Đến ngày        Tag: den_ngay:date#
 ```
 
-**Ví dụ cấu hình thực tế cho một dòng của bảng Danh sách môn học:**
-- Ở cột "Mã học phần", đặt Tag: `ds_mon(Danh sách môn).ma_hp:api(hoc_phan)*`
-- Ở cột "Tên môn học", đặt Tag: `ds_mon(Danh sách môn).ten_mon@!`
-- Ở cột "Số tín chỉ", đặt Tag: `ds_mon(Danh sách môn).so_tin_chi:number@!`
+Thứ tự lấy theo thứ tự các ô trong file Word. Muốn ép thứ tự khác thì ghi số:
 
-**Giao diện sinh ra:** Hệ thống sẽ tự động hiển thị một Block có tiêu đề **"Danh sách môn"** kèm nút **"+ Thêm dòng"**, các ô nhập tương ứng sẽ được hiển thị gọn gàng bên dưới. Khi xuất file Word, hệ thống sẽ tự động nhân bản dòng dữ liệu này tương ứng với số dòng sinh viên nhập.
+```
+Title: Từ ngày         Tag: tu_ngay:date#1
+Title: Lý do xin rút   Tag: ly_do:textarea*#2
+```
 
-#### Tính năng Auto-fill (Tự động điền) và Cơ chế Khớp Dữ Liệu:
-Khi cấu hình cờ `@` (ví dụ `ten_mon@!`), hệ thống Web sẽ không yêu cầu sinh viên tự nhập mà sẽ tự động điền giá trị dựa vào trường API Select nằm cùng cấp (ví dụ `ma_mon:api(hoc_phan)`).
+- **Số chỉ để sắp xếp**, không phải hạn mức — `#6`, `#9` đều được.
+- **Đã ghi số thì ghi số cho tất cả.** `#` không số được đánh số tự động 1, 2, 3... theo thứ tự trong
+  mẫu, nên trộn `#` với `#1` dễ ra hai trường cùng vị trí.
+- **Không đánh cờ thì ẩn** khỏi danh sách. Trường vẫn lưu đủ, mở chi tiết đơn vẫn thấy.
+- **Mẫu không đánh cờ nào thì cột ghi "Không có".** Hệ thống không tự đoán.
+- **Tối đa 5 mục**, vượt thì lấy 5 mục đầu.
+- **Cả một bảng lặp tính là một mục**, đứng ở vị trí số nhỏ nhất của nó. Đánh `#` lên từng cột muốn
+  hiện; ô trong danh sách vẽ tối đa 3 dòng, thừa thì ghi *"… còn N dòng nữa"*.
 
-**Quy tắc ưu tiên tự động điền (Ví dụ cho API `hoc_phan`):**
-1. **Khớp chính xác (Exact Mapping - Khuyên dùng):** Hệ thống sẽ ưu tiên tìm trong cấu trúc JSON trả về từ API xem có thuộc tính nào trùng tên chính xác với `field_name` của bạn hay không. 
-   - Ví dụ: API trả về object `{ "ma_mon": "IT123", "ten_mon": "Toán", "so_tin_chi": 3, "nhom_to": "01" }`.
-   - Nếu bạn đặt Tag là `ds_mon.so_tin_chi@!`, hệ thống tự động điền `3`.
-   - Nếu bạn đặt Tag là `ds_mon.nhom_to@!`, hệ thống tự điền `"01"`.
+```
+Title: Mã học phần   Tag: ds_mon(Danh sách học phần).ma_mon*#4
+Title: Tên học phần  Tag: ds_mon(Danh sách học phần).ten_mon@!#5
+Title: Số TC         Tag: ds_mon(Danh sách học phần).so_tin_chi@!#6
+```
 
-2. **Khớp tương đối (Heuristic Fallback):** Nếu không tìm thấy key chính xác, hệ thống sẽ cố gắng đoán nội dung thông qua tên thẻ của bạn:
-   - Nếu tên thẻ chứa `ten_mon` hoặc `ten_hp`: Lấy tên môn học.
-   - Nếu tên thẻ chứa `ma_mon` hoặc `ma_hp`: Lấy mã môn học.
-   - Nếu tên thẻ chứa `tin_chi` hoặc `so_tc`: Lấy số tín chỉ.
-   - Nếu tên thẻ chứa `nhom_to`, `nhom_hp`, hoặc `nhom`: Lấy nhóm tổ.
-
----
-
-## 4. Tự Động Điền Thông Tin Sinh Viên (Preset Syncing)
-
-Hệ thống sẽ **tự động** lấy thông tin cá nhân của người dùng đang đăng nhập và điền vào Form nếu bạn đặt `Tag` khớp chính xác với một trong các từ khóa dưới đây. Khuyến nghị kết hợp với cờ `!` (Readonly) để chặn người dùng tự ý sửa.
-
-| Thông tin cần lấy | Đặt Title (Nhãn hiển thị) | Đặt Tag (Dữ liệu & Cấu hình) | Kết quả giao diện sinh ra |
-| :--- | :--- | :--- | :--- |
-| **Họ và tên sinh viên** | `Họ và tên` | `ho_ten!` | `<TextInput>` màu xám (chỉ đọc), đã điền sẵn "Nguyễn Văn A" |
-| **Mã Sinh Viên** | `Mã SV` | `ma_sv!` | `<TextInput>` màu xám (chỉ đọc), đã điền sẵn "2121050441" |
-| **Ngày sinh** | `Ngày sinh` | `ngay_sinh:date!` | Bảng chọn lịch `<DatePickerInput>` màu xám, điền sẵn ngày |
-| **Lớp quản lý** | `Lớp` | `lop!` | `<TextInput>` màu xám (chỉ đọc), điền sẵn "D21CQCN01-N" |
-| **Khóa học/Niên khóa** | `Khóa học` | `nien_khoa!` | `<TextInput>` màu xám (chỉ đọc), điền sẵn "2021-2026" |
-| **Khoa (Đơn vị)** | `Khoa quản lý` | `khoa!` | `<TextInput>` màu xám (chỉ đọc), điền sẵn "Công nghệ thông tin" |
-| **Ngành học** | `Ngành` | `nganh!` | `<TextInput>` màu xám (chỉ đọc), điền sẵn "Kỹ thuật phần mềm" |
-
-> **Lưu ý:** Chỉ cần nhập đúng ô Tag theo cột số 3 (ví dụ: `ho_ten!`), ô Title bạn có thể tự do đặt tùy ý (Họ tên, Tên sinh viên...). Dấu `!` là không bắt buộc, nhưng cực kỳ khuyến nghị để tránh sinh viên tự sửa sai lệch thông tin gốc.
+Ba cột trên chiếm **một** trong năm mục, ở vị trí 4.
 
 ---
 
-## 5. Đặc tả API Select và Thuộc tính tự động điền (Auto-fill Properties)
+## 5. Thông tin sinh viên tự điền
 
-Hệ thống cung cấp một số API chuyên dụng để tự động kéo dữ liệu (ví dụ: Học kỳ, Học phần). Để dữ liệu đồng bộ chính xác giữa Form và Word, hãy dùng đúng tên biến (field_name).
+Đặt Tag đúng tên ở [bảng 0.A](#a-tự-điền-từ-hồ-sơ-sinh-viên) là hệ thống lấy hồ sơ của người đang
+đăng nhập điền vào. Mỗi thông tin chỉ có **một** tên biến duy nhất, không nhận tên thay thế.
 
-> **💡 MẸO - Magic Keys (Cú pháp viết tắt / Auto-inference):**
-> Để tăng tốc độ làm mẫu Word, hệ thống hỗ trợ tự động nội suy (auto-inference) cho các biến phổ biến. 
-> - Nếu bạn đặt đúng tên biến là `hoc_ky` (ví dụ `hoc_ky` hoặc `hoc_ky*`), hệ thống sẽ tự động ngầm hiểu là `hoc_ky:api(hoc_ky)`. Bạn không cần gõ dài dòng!
-> - Nếu bạn muốn đặt tên biến khác đi (ví dụ `ky_bat_dau`), bạn **vẫn phải** dùng cú pháp tường minh `ky_bat_dau:api(hoc_ky)` để gọi API.
+**Thông tin học vụ** (`ho_ten`, `ma_sv`, `ngay_sinh`, `noi_sinh`, `lop`, `nien_khoa`, `khoa`, `nganh`):
+luôn có sẵn, **nên gắn `!`** để sinh viên không sửa lệch thông tin gốc.
 
-### 5.1. API `hoc_ky`
-- **Cách dùng viết tắt (Khuyên dùng):** Chỉ cần đặt Tag là `hoc_ky` (nếu bắt buộc thì `hoc_ky*`). Hệ thống tự ép kiểu thành Select API.
-- **Cách dùng tường minh:** Đặt Tag `ky_hoc:api(hoc_ky)` (dành cho khi bạn muốn dùng tên biến khác `hoc_ky`).
-- **Hoạt động:** Hiển thị dropdown chứa danh sách các học kỳ, ví dụ "Học kỳ 1 - 2023-2024". Khi xuất Word, thẻ này sẽ hiển thị số Học kỳ (vd: `1`).
-- **Auto-fill liên quan:** 
-  - `nam_hoc` (Năm học): Khi người dùng chọn một học kỳ, nếu trong mẫu Word có Content Control mang Tag `nam_hoc!` hoặc `nam_hoc@!`, hệ thống tự động trích xuất chuỗi năm học (vd: `2023-2024`) và điền vào thẻ này.
+**Liên lạc và giấy tờ tùy thân** (`dien_thoai`, `email`, các trường CMND/CCCD/hộ chiếu): lấy từ màn
+**Cập nhật thông tin lý lịch**, sinh viên chưa khai thì trống. **Không gắn `!`** cho nhóm này.
 
-### 5.2. API `hoc_phan` (hoặc `mon_hoc`)
-- **Cách dùng viết tắt:** Chỉ cần đặt Tag `ma_mon*`. Hệ thống sẽ tự động ép kiểu thành `api(hoc_phan)`.
-- **Cách dùng tường minh:** Đặt Tag `mon_hoc_thay_the:api(hoc_phan)*` (dành cho tên biến tùy chỉnh).
-- **Hoạt động:** Hiển thị dropdown tìm kiếm toàn bộ danh sách điểm và danh mục môn học của sinh viên. Tùy vào tên thẻ (chứa chữ `ten` hay không) mà giao diện sẽ cho tìm theo Tên hay Mã môn.
-- **Các thuộc tính Auto-fill (`@`) trả về từ API:**
-  Khi cấu hình các thẻ cùng cấp (cùng 1 dòng trong bảng), bạn có thể dùng các tên thẻ sau kèm cờ `@!` để lấy thẳng dữ liệu từ API:
-  - `ma_mon` hoặc `ma_hp`: Mã môn học (vd: "IT123").
-  - `ten_mon` hoặc `ten_hp`: Tên môn học (vd: "Kế toán doanh nghiệp mỏ").
-  - `so_tin_chi` hoặc `tin_chi`: Số tín chỉ (vd: "3").
-  - `nhom_to` hoặc `nhom`: Nhóm tổ (vd: "01").
+> ⚠️ Mọi trường trong bảng 0.A đều bị ẩn ở chế độ **"Chỉ nhập liệu"** (chế độ mặc định khi mở form),
+> kể cả khi đang trống. Sinh viên thiếu CCCD phải chuyển sang **"Điền trên biểu mẫu"** hoặc
+> **"Chia đôi"** mới nhập được.
 
----
+Tên biến CMND luôn có hậu tố `_cmnd`: viết `ngay_cap_cmnd`, **không** viết `ngay_cap`.
 
-## 6. Tổng hợp Ví Dụ Cấu Hình Chuẩn (Thực Tế)
-
-Dưới đây là bảng ví dụ tổng hợp cho **tất cả** các trường hợp thiết lập Tag phổ biến, đảm bảo tương thích 100% với WPS Office và hệ thống tự động điền:
-
-| Yêu cầu / Ngữ cảnh | Cấu hình Title (Nhãn) | Cấu hình Tag (Data & Cấu hình) | Kết quả UI / Word |
-| :--- | :--- | :--- | :--- |
-| **1. Thông tin sinh viên (Auto-sync)** | `Họ và tên` | `ho_ten!` | Text xám (chỉ đọc), điền sẵn thông tin. |
-| **2. Bắt buộc nhập, nhiều dòng** | `Lý do xin phép` | `ly_do:text~*` | Textarea, có sao đỏ `*`. |
-| **3. Dropdown tĩnh** | `Ca học` | `ca_hoc:select(1:Sáng,2:Chiều)*` | Select tĩnh (Sáng / Chiều). |
-| **4. Chọn Học kỳ & tự điền Năm học** | `Học kỳ` (Ô 1) <br> `Năm học` (Ô 2) | `hoc_ky:api(hoc_ky)` <br> `nam_hoc@!` | Ô Học kỳ cho phép chọn API. Ô Năm học tự động điền (VD: `2023-2024`). |
-| **5. Bảng: Thêm danh sách môn (Có API)** | `Mã học phần` (Cột 1) <br> `Tên môn` (Cột 2) <br> `Số TC` (Cột 3) <br> `Nhóm` (Cột 4) | `ds_mon.ma_hp:api(hoc_phan)*` <br> `ds_mon.ten_mon@!` <br> `ds_mon.so_tin_chi@!` <br> `ds_mon.nhom_to@!` | Nút `+ Thêm dòng`. Khi chọn mã môn ở Cột 1, Cột 2, 3, 4 tự động được điền dữ liệu (có icon ⚡ auto-fill). |
-| **6. Checkbox xác nhận** | `Cam kết` | `cam_ket:bool*` | Ô Checkbox bắt buộc tích. |
-| **7. Nhập Ngày tháng** | `Ngày nộp` | `ngay_nop:date*` | Bảng DatePicker. |
+```
+Title: Họ và tên      Tag: ho_ten!
+Title: Mã SV          Tag: ma_sv!
+Title: Ngày sinh      Tag: ngay_sinh:date!
+Title: Số CCCD        Tag: so_cccd
+Title: Ngày cấp       Tag: ngay_cap_cccd:date
+Title: Nơi cấp        Tag: noi_cap_cccd
+```
 
 ---
 
-## 6. Hướng Dẫn Thao Tác Trực Tiếp Trên MS Word
+## 6. Học kỳ và môn học
 
-1. **Bật Developer Mode:** Vào `File > Options > Customize Ribbon`. Ở cột phải, tick chọn hộp **Developer**.
-2. **Chèn Biến:** Đặt con trỏ chuột vào vị trí muốn chèn dữ liệu. Mở tab **Developer**, bấm vào biểu tượng `Aa` (Rich Text Content Control) hoặc `Aa` chữ nhỏ (Plain Text).
-3. **Cấu hình Biến:** Bấm nút **Properties** trên thanh công cụ.
-   - Ô **Title**: Điền tiêu đề hiển thị (VD: `Lý do xin rút môn`).
-   - Ô **Tag**: Điền chuẩn cú pháp (VD: `ly_do:text~*`).
-4. **Lưu file** `.docx` và upload lên hệ thống.
+Hệ thống có **hai** nguồn dữ liệu, khai bằng `:api(tên_nguồn)`. Hai tên biến `hoc_ky` và `ma_mon` là
+viết tắt, tự hiểu thành `api`, không cần ghi.
+
+| Viết tắt | Viết đầy đủ tương đương |
+| :--- | :--- |
+| `hoc_ky` | `hoc_ky:api(hoc_ky)` |
+| `ma_mon` | `ma_mon:api(hoc_phan)` |
+
+Khai nguồn không tồn tại (ví dụ `:api(khoa)`) thì ô đó thành ô nhập tay kèm icon cảnh báo — đơn vẫn
+nộp được.
+
+### 6.1. Học kỳ — `hoc_ky`
+
+Dropdown các học kỳ của sinh viên, hiện dạng "Học kỳ 1 - 2023-2024". Trong file Word ô này ghi **số
+kỳ** (`1`), không ghi mã 5 số.
+
+Kèm ô `nam_hoc` để có năm học:
+
+```
+Title: Học kỳ    Tag: hoc_ky*
+Title: Năm học   Tag: nam_hoc@!
+```
+
+Sinh viên chọn "Học kỳ 1 - 2023-2024", ô Năm học tự hiện `2023-2024`.
+
+> **Luôn đặt tên biến là `hoc_ky`.** Đặt tên khác (`ky_bat_dau:api(hoc_ky)`) thì dropdown vẫn chạy,
+> nhưng file Word ghi mã 5 số (`20231`) thay vì `1`, và danh sách môn **không** lọc theo học kỳ đó.
+
+### 6.2. Môn học — `ma_mon` hoặc `api(hoc_phan)`
+
+Dropdown tìm kiếm trong bảng điểm và danh mục môn học của sinh viên.
+
+- Mẫu **có** ô `hoc_ky`: phải chọn học kỳ trước, danh sách chỉ gồm các môn đã học trong kỳ đó.
+- Mẫu **không có** ô `hoc_ky`: chọn trong toàn bộ danh mục môn học.
+- Tên biến chứa chữ `ten` (ví dụ `ten_mon_xin_hoc:api(hoc_phan)`) thì tìm và lưu **tên môn**; còn lại
+  tìm và lưu **mã môn**.
+
+**Tự điền các cột khác chỉ chạy trong bảng lặp.** Chọn môn ở cột `ma_mon`, các cột **cùng dòng** có
+tên trong [bảng 0.C](#c-tự-điền-theo-ô-khác) (`ten_mon`, `so_tin_chi`, `nhom_to`, `ten_mon_eg`) được
+điền theo. Tên phải trùng **đúng** — `ma_hp`, `tin_chi`, `nhom` không được điền.
+
+Một ô chọn môn đứng riêng (ngoài bảng) chỉ là dropdown, không kéo theo ô nào:
+
+```
+Title: Môn học thay thế   Tag: mon_thay_the:api(hoc_phan)*
+```
 
 ---
 
-## 7. Lưu ý về WPS Office
+## 7. Bảng lặp
 
-Hệ thống hỗ trợ 100% file `.docx` tạo từ **WPS Office**. WPS có cấu trúc lưu XML hơi khác so với MS Word (các Content Control rỗng không có thẻ `<w:t>`). Các developer khi bảo trì code `DocxViewer` hoặc `extractFieldsFromWord` cần lưu ý tuyệt đối không dùng giả định: *Mọi SDT đều có thẻ `<w:t>` bên trong*. Luôn phải có logic fallback để tự tạo `<w:t>` nếu field trống.
+Khi cần danh sách nhiều dòng (danh sách môn xin rút, danh sách thành viên...), đặt **cùng một tiền
+tố nhóm** cho mọi Content Control trong dòng đó:
+
+```
+nhóm(Tiêu đề nhóm).tên_biến[:kiểu][cờ]
+```
+
+Ví dụ dòng bảng "Danh sách môn học" trong Word:
+
+| STT | Mã môn | Tên môn | Số TC | Nhóm |
+| :--- | :--- | :--- | :--- | :--- |
+| | `[Mã học phần]` | `[Tên môn học]` | `[Số TC]` | `[Nhóm]` |
+
+Các Content Control trong dòng:
+
+| Cột | Title | Tag |
+| :--- | :--- | :--- |
+| Mã môn | `Mã học phần` | `ds_mon(Danh sách môn học).ma_mon*` |
+| Tên môn | `Tên môn học` | `ds_mon(Danh sách môn học).ten_mon@!` |
+| Số TC | `Số TC` | `ds_mon(Danh sách môn học).so_tin_chi@!` |
+| Nhóm | `Nhóm` | `ds_mon(Danh sách môn học).nhom_to@!` |
+
+Trên web hiện một khối "Danh sách môn học" kèm nút **+ Thêm dòng**. Sinh viên chỉ chọn mã môn, ba cột
+còn lại tự điền. Khi xuất Word, dòng trong bảng được nhân bản theo số dòng đã nhập.
+
+- **Tiêu đề nhóm** lấy từ ô **đầu tiên** của nhóm trong file. Để chắc chắn, khai giống nhau ở mọi ô.
+- Tiêu đề nhóm **không được chứa** dấu `.` hoặc `:` — sẽ làm hỏng cả Tag.
+- Bỏ trống tiêu đề thì hệ thống dùng nhãn có sẵn cho `ds_mon`, `ds_mon_hoc`, `ds_hoc_phan`,
+  `ds_sinh_vien`, `ds_thanh_vien`; nhóm khác lấy chính tên nhóm làm nhãn (`ds_thiet_bi` →
+  "Ds thiet bi").
+- Dòng sinh viên bấm thêm nhưng bỏ trống hết thì không được lưu.
+
+---
+
+## 8. Ví dụ trọn một mẫu: Đơn xin rút học phần
+
+Văn bản trong Word (`[...]` là Content Control, ghi theo Title):
+
+> **ĐƠN XIN RÚT HỌC PHẦN**
+>
+> Họ và tên: `[Họ và tên]` Mã SV: `[Mã SV]` Lớp: `[Lớp]`
+> Khoa: `[Khoa]` Điện thoại: `[Điện thoại]`
+>
+> Em xin rút các học phần sau trong học kỳ `[Học kỳ]` năm học `[Năm học]`:
+>
+> | Mã HP | Tên học phần | Số TC | Nhóm |
+> | --- | --- | --- | --- |
+> | `[Mã HP]` | `[Tên HP]` | `[Số TC]` | `[Nhóm]` |
+>
+> Lý do: `[Lý do]`
+>
+> `[Cam kết]` Em cam kết thông tin trên là đúng sự thật.
+>
+> Ngày `[Ngày làm đơn]`
+
+Bảng cấu hình:
+
+| Title | Tag | Ghi chú |
+| :--- | :--- | :--- |
+| Họ và tên | `ho_ten!` | Tự điền, khóa |
+| Mã SV | `ma_sv!` | Tự điền, khóa |
+| Lớp | `lop!` | Tự điền, khóa |
+| Khoa | `khoa!` | Tự điền, khóa |
+| Điện thoại | `dien_thoai` | Tự điền nếu có, cho sửa |
+| Học kỳ | `hoc_ky*` | Dropdown học kỳ |
+| Năm học | `nam_hoc@!` | Tự điền theo học kỳ |
+| Mã HP | `ds_mon(Học phần xin rút).ma_mon*#2` | Dropdown môn, lọc theo học kỳ |
+| Tên HP | `ds_mon(Học phần xin rút).ten_mon@!#2` | Tự điền theo mã |
+| Số TC | `ds_mon(Học phần xin rút).so_tin_chi@!` | Tự điền theo mã |
+| Nhóm | `ds_mon(Học phần xin rút).nhom_to@!` | Tự điền theo mã |
+| Lý do | `ly_do:textarea*#1` | Nhập tay, hiện ở danh sách vị trí 1 |
+| Cam kết | `cam_ket:bool*` | Ô tích |
+| Ngày làm đơn | `ngay_lam_don:date*` | Chọn ngày |
+
+Kết quả: sinh viên mở form chỉ phải chọn học kỳ, chọn môn, nhập lý do, tích cam kết và chọn ngày.
+Cán bộ xử lý thấy ngay "Lý do" và bảng "Mã HP / Tên HP" trên danh sách.
+
+---
+
+## 9. Lỗi thường gặp
+
+| Sai | Hậu quả | Đúng |
+| :--- | :--- | :--- |
+| Tag để trống | Tên biến thành `h__v__t_n`, không tự điền | `ho_ten!` |
+| `ly_do*:textarea` | Cờ bị hiểu thành tên biến | `ly_do:textarea*` |
+| `ly_do:text~*` | Cờ `~` đã bỏ, ra ô một dòng | `ly_do:textarea*` |
+| `mssv!`, `fullname!` | Không tự điền | `ma_sv!`, `ho_ten!` |
+| `ngay_cap:date` | Không tự điền | `ngay_cap_cmnd:date` |
+| `ds_mon.ma_hp:api(hoc_phan)` + `ds_mon.ten_hp@!` | Cột tên không tự điền | `ds_mon.ma_mon` + `ds_mon.ten_mon@!` |
+| `ky_hoc:api(hoc_ky)` | Word ghi `20231`, môn không lọc theo kỳ | `hoc_ky` |
+| `gioi_tinh:select(1:Nam,2:Nữ)` | Word ghi `1`/`2` | `gioi_tinh:select(Nam,Nữ)` |
+| `ds_mon(DS môn. HK1).ma_mon` | Dấu `.` trong tiêu đề làm hỏng Tag | `ds_mon(DS môn HK1).ma_mon` |
+| Hai bảng khác nhau cùng tên nhóm `ds_mon` | Gộp thành một bảng | `ds_mon_rut`, `ds_mon_dang_ky` |
+
+---
+
+## 10. Thao tác trong Word
+
+1. **Bật tab Developer:** `File → Options → Customize Ribbon` → tick **Developer** ở cột phải.
+2. **Chèn biến:** đặt con trỏ vào vị trí cần điền, tab **Developer** → **Plain Text Content Control**
+   (hoặc Rich Text).
+3. **Đặt Title và Tag:** chọn control vừa chèn → **Properties** → điền **Title** và **Tag**.
+4. **Lưu** `.docx` và upload lên hệ thống.
+5. **Kiểm tra:** vào **Đăng ký dịch vụ trực tuyến**, chọn đúng loại dịch vụ, bấm **Sửa** ở ô
+   "Điền thông tin đơn từ". Rê chuột lên nhãn một ô sẽ thấy Tag gốc của nó — dùng để đối chiếu với
+   file Word.
+
+Cùng một tên biến đặt ở nhiều chỗ trong file là hợp lệ: form chỉ hiện **một** ô, mọi vị trí trong
+Word nhận cùng giá trị (ví dụ `khoa` ở cả "Kính gửi" lẫn dòng thông tin sinh viên).
+
+### Tự kiểm trước khi bàn giao mẫu
+
+- [ ] Mọi Content Control đều có **cả Title lẫn Tag**.
+- [ ] Tên biến viết thường không dấu, dùng `_`; tên tự điền khớp đúng [mục 0](#0-tra-cứu-nhanh--các-tên-biến-hệ-thống-hiểu-sẵn).
+- [ ] Trường bắt buộc có `*`; ô hệ thống điền có `@!`; thông tin học vụ có `!`.
+- [ ] Ô trong cùng một bảng dùng **cùng một tên nhóm**, bảng khác nhau dùng tên nhóm khác nhau.
+- [ ] Đã đánh `#` cho các trường cán bộ cần xem nhanh (tối đa 5).
+- [ ] Mở F12 → Console, không có cảnh báo `[EduOne Template]`.
+
+---
+
+## 11. Ghi chú kỹ thuật (cho lập trình viên)
+
+**File liên quan** (trong `apps/eduone/src/features/service-registration/`):
+
+| File | Vai trò |
+| :--- | :--- |
+| `shared/templateSchema.ts` | Hằng số: `FIELD_TYPES`, `MAGIC_KEYS`, `GROUP_TITLE_MAP`, `STUDENT_PRESET_KEYS` |
+| `utils/word-utils.ts` | `parseWordTag`, `buildFieldKey`, `extractFieldsFromWord` |
+| `components/api-selects/` | `API_SELECT_REGISTRY`: `HocKySelect`, `HocPhanSelect`, `FallbackApiSelect` |
+| `shared/fieldValue.ts` | `getDisplayValue`: suy `hoc_ky` → số kỳ, `nam_hoc` từ mã học kỳ |
+| `shared/thongTinBoSung.ts` | Trải phẳng dữ liệu gửi `sms/w-savesvdkgcn`, tính vị trí cờ `#` |
+| `components/DocxViewer.tsx` | Xem trước và ghi giá trị vào file docx |
+
+**Khóa của trường sinh ở hai chiều** — đọc mẫu ra form và ghi token `{{...}}` vào file. Cả hai
+**bắt buộc** dùng chung `buildFieldKey()`. Lệch nhau một quy tắc nhỏ là ô trong file bị bỏ trống mà
+không báo lỗi.
+
+**WPS Office.** Content Control rỗng trong file WPS không có `<w:t>`. Code trong `DocxViewer` và
+`extractFieldsFromWord` **không được** giả định mọi `w:sdt` đều chứa `w:t`; phải tự tạo `w:t` khi
+thiếu, và đặt **bên trong** `w:p` sẵn có — nếu không `docx-preview` bỏ qua nội dung.
+
+**Thêm nguồn API mới:** viết component trong `components/api-selects/`, đăng ký vào
+`API_SELECT_REGISTRY`, rồi cập nhật mục 0.B và mục 6 của tài liệu này.
+
+**Hạn chế đã biết của code hiện tại** (tài liệu mô tả đúng hành vi hiện có, sửa code thì cập nhật lại):
+
+- Cờ `*` chỉ hiện dấu sao, `useForm` trong `RegistrationExtraModal` chưa có `validate` nên không chặn lưu.
+- `select` dạng `giá_trị:nhãn` ghi **giá trị** ra Word và payload; `formatDisplayValue` trong `DocxViewer` chưa tra nhãn.
+- `isAutoFilledField` ẩn mọi khóa trong `STUDENT_PRESET_KEYS` ở chế độ "Chỉ nhập liệu" kể cả khi rỗng.
+- Suy số kỳ / năm học trong `getDisplayValue` và lọc môn theo kỳ trong `HocPhanSelect` chỉ nhận ô tên `hoc_ky` (hoặc `ma_hk`).
+- Tự điền theo môn trong `HocPhanSelect` chỉ chạy khi có `arrayPath` (trong bảng lặp), và không cần cờ `@` — khớp theo tên cột.
+- Tiêu đề nhóm lấy từ ô đầu tiên gặp trong `extractFieldsFromWord`; các ô sau khai khác thì bị bỏ qua.
+- `phone`, `email` chưa có kiểm tra định dạng.
