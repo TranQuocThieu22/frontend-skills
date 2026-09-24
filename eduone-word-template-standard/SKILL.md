@@ -292,30 +292,75 @@ Title: Môn học thay thế   Tag: mon_thay_the:api(hoc_phan)*
 
 ## 7. Bảng lặp
 
-Khi cần danh sách nhiều dòng (danh sách môn xin rút, danh sách thành viên...), đặt **cùng một tiền
-tố nhóm** cho mọi Content Control trong dòng đó:
+Khi cần danh sách nhiều dòng (danh sách môn xin rút, danh sách thành viên...), trong Word chỉ cần
+soạn **một dòng mẫu** của bảng, rồi đặt **cùng một tiền tố nhóm** cho mọi Content Control trong dòng
+đó. Sinh viên thêm bao nhiêu dòng trên web thì khi xuất Word dòng mẫu được nhân lên bấy nhiêu.
 
 ```
 nhóm(Tiêu đề nhóm).tên_biến[:kiểu][cờ]
 ```
 
-Ví dụ dòng bảng "Danh sách môn học" trong Word:
+### 7.1. Đọc một Tag trong bảng
+
+Ô cột "Mã HP" trong bảng có **hai** thứ tên, dễ nhầm:
+
+```
+Title:  Mã HP
+Tag:    ds_mon(Học phần xin rút).ma_mon*#2
+```
+
+| Phần | Ở đâu | Ý nghĩa | Hiện trên form |
+| :--- | :--- | :--- | :--- |
+| `Mã HP` | ô **Title** | Nhãn của **từng cột** | Nhãn trên ô chọn môn trong mỗi dòng |
+| `ds_mon` | Tag, trước `(` | Tên **nhóm** cho máy — các ô chung tên nhóm thuộc cùng một bảng | Không hiện |
+| `(Học phần xin rút)` | Tag, trong ngoặc | **Tiêu đề nhóm** — tên của cả khối bảng | Tiêu đề khối, phía trên các dòng và nút **+ Thêm dòng** |
+| `.ma_mon` | Tag, sau dấu chấm | Tên biến của cột | Không hiện |
+| `*` | Tag, cờ | Bắt buộc | Dấu `*` đỏ |
+| `#2` | Tag, cờ | Hiện ở cột **Dữ liệu từ file** của màn xử lý thủ tục, vị trí thứ 2 ([mục 4](#cờ---trường-hiện-ở-màn-xử-lý-thủ-tục)). Không liên quan tới thứ tự cột hay số thứ tự dòng | Không hiện trên form sinh viên |
+
+Nói gọn: **Title đặt tên cột, `(...)` trong Tag đặt tên cả bảng.**
+
+### 7.2. Ví dụ bảng "Danh sách môn học"
+
+Dòng mẫu trong Word:
 
 | STT | Mã môn | Tên môn | Số TC | Nhóm |
 | :--- | :--- | :--- | :--- | :--- |
-| | `[Mã học phần]` | `[Tên môn học]` | `[Số TC]` | `[Nhóm]` |
+| *(đánh số tự động, xem 7.3)* | `[Mã học phần]` | `[Tên môn học]` | `[Số TC]` | `[Nhóm]` |
 
 Các Content Control trong dòng:
 
 | Cột | Title | Tag |
 | :--- | :--- | :--- |
+| STT | — *(không chèn Content Control)* | — |
 | Mã môn | `Mã học phần` | `ds_mon(Danh sách môn học).ma_mon*` |
 | Tên môn | `Tên môn học` | `ds_mon(Danh sách môn học).ten_mon@!` |
 | Số TC | `Số TC` | `ds_mon(Danh sách môn học).so_tin_chi@!` |
 | Nhóm | `Nhóm` | `ds_mon(Danh sách môn học).nhom_to@!` |
 
-Trên web hiện một khối "Danh sách môn học" kèm nút **+ Thêm dòng**. Sinh viên chỉ chọn mã môn, ba cột
-còn lại tự điền. Khi xuất Word, dòng trong bảng được nhân bản theo số dòng đã nhập.
+Trên web hiện một khối tiêu đề "Danh sách môn học", mỗi dòng ghi "Dòng 1", "Dòng 2"... kèm nút
+**+ Thêm dòng**. Sinh viên chỉ chọn mã môn, ba cột còn lại tự điền.
+
+### 7.3. Cột số thứ tự (STT)
+
+Hệ thống **không** có biến số thứ tự. Nhân dòng là chép nguyên dòng mẫu, nên gõ tay số `1` vào ô STT
+thì mọi dòng đều ra `1`.
+
+Dùng **đánh số tự động của Word** cho ô STT:
+
+1. Đặt con trỏ vào ô STT của dòng mẫu (ô để trống, không chèn Content Control).
+2. Tab **Home** → bấm **Numbering** (biểu tượng `1. 2. 3.`) → chọn kiểu `1.` hoặc `1)`.
+3. Muốn bỏ dấu chấm: bấm mũi tên cạnh **Numbering** → **Define New Number Format** → ô
+   **Number format** xóa dấu `.` sau số.
+
+Khi xuất đơn, các dòng được nhân lên dùng chung danh sách đánh số đó nên Word tự đếm tiếp `1, 2, 3...`
+— cả trong bản xem trước trên web lẫn file tải về.
+
+> Ô STT phải là danh sách đánh số **riêng** của bảng. Nếu nó nối tiếp một danh sách đánh số khác phía
+> trên trong văn bản (ví dụ các mục "1. Lý do", "2. Cam kết"), số sẽ đếm tiếp từ danh sách đó. Khi đó
+> bấm chuột phải vào số → **Restart at 1**.
+
+### 7.4. Lưu ý
 
 - **Tiêu đề nhóm** lấy từ ô **đầu tiên** của nhóm trong file. Để chắc chắn, khai giống nhau ở mọi ô.
 - Tiêu đề nhóm **không được chứa** dấu `.` hoặc `:` — sẽ làm hỏng cả Tag.
@@ -337,9 +382,9 @@ Văn bản trong Word (`[...]` là Content Control, ghi theo Title):
 >
 > Em xin rút các học phần sau trong học kỳ `[Học kỳ]` năm học `[Năm học]`:
 >
-> | Mã HP | Tên học phần | Số TC | Nhóm |
-> | --- | --- | --- | --- |
-> | `[Mã HP]` | `[Tên HP]` | `[Số TC]` | `[Nhóm]` |
+> | STT | Mã HP | Tên học phần | Số TC | Nhóm |
+> | --- | --- | --- | --- | --- |
+> | *(số tự động)* | `[Mã HP]` | `[Tên HP]` | `[Số TC]` | `[Nhóm]` |
 >
 > Lý do: `[Lý do]`
 >
@@ -358,6 +403,7 @@ Bảng cấu hình:
 | Điện thoại | `dien_thoai` | Tự điền nếu có, cho sửa |
 | Học kỳ | `hoc_ky*` | Dropdown học kỳ |
 | Năm học | `nam_hoc@!` | Tự điền theo học kỳ |
+| *(ô STT)* | — | Không chèn Content Control, dùng Numbering của Word ([7.3](#73-cột-số-thứ-tự-stt)) |
 | Mã HP | `ds_mon(Học phần xin rút).ma_mon*#2` | Dropdown môn, lọc theo học kỳ |
 | Tên HP | `ds_mon(Học phần xin rút).ten_mon@!#2` | Tự điền theo mã |
 | Số TC | `ds_mon(Học phần xin rút).so_tin_chi@!` | Tự điền theo mã |
@@ -365,6 +411,14 @@ Bảng cấu hình:
 | Lý do | `ly_do:textarea*#1` | Nhập tay, hiện ở danh sách vị trí 1 |
 | Cam kết | `cam_ket:bool*` | Ô tích |
 | Ngày làm đơn | `ngay_lam_don:date*` | Chọn ngày |
+
+Đọc bốn dòng của bảng học phần (cách đọc đầy đủ ở [7.1](#71-đọc-một-tag-trong-bảng)):
+
+- `ds_mon` giống nhau ở cả 4 ô → cả 4 ô thuộc **một** bảng. Tên nhóm tùy chọn, chỉ cần 4 ô trùng nhau.
+- `(Học phần xin rút)` là tiêu đề của cả khối bảng trên form. Title `Mã HP`, `Tên HP`... là nhãn từng cột.
+- `#1` ở ô Lý do và `#2` ở hai cột Mã HP, Tên HP: cột **Dữ liệu từ file** của màn xử lý thủ tục hiện
+  "Lý do" trước, bảng Mã HP / Tên HP sau. Số TC và Nhóm không có `#` nên không hiện ở đó. Cờ `#` không
+  ảnh hưởng tới form sinh viên.
 
 Kết quả: sinh viên mở form chỉ phải chọn học kỳ, chọn môn, nhập lý do, tích cam kết và chọn ngày.
 Cán bộ xử lý thấy ngay "Lý do" và bảng "Mã HP / Tên HP" trên danh sách.
@@ -384,6 +438,7 @@ Cán bộ xử lý thấy ngay "Lý do" và bảng "Mã HP / Tên HP" trên danh
 | `ky_hoc:api(hoc_ky)` | Word ghi `20231`, môn không lọc theo kỳ | `hoc_ky` |
 | `gioi_tinh:select(1:Nam,2:Nữ)` | Word ghi `1`/`2` | `gioi_tinh:select(Nam,Nữ)` |
 | `ds_mon(DS môn. HK1).ma_mon` | Dấu `.` trong tiêu đề làm hỏng Tag | `ds_mon(DS môn HK1).ma_mon` |
+| Gõ tay số `1` vào ô STT của bảng | Mọi dòng đều ra `1` | Dùng Numbering của Word ([7.3](#73-cột-số-thứ-tự-stt)) |
 | Hai bảng khác nhau cùng tên nhóm `ds_mon` | Gộp thành một bảng | `ds_mon_rut`, `ds_mon_dang_ky` |
 
 ---
@@ -408,6 +463,7 @@ Word nhận cùng giá trị (ví dụ `khoa` ở cả "Kính gửi" lẫn dòng
 - [ ] Tên biến viết thường không dấu, dùng `_`; tên tự điền khớp đúng [mục 0](#0-tra-cứu-nhanh--các-tên-biến-hệ-thống-hiểu-sẵn).
 - [ ] Trường bắt buộc có `*`; ô hệ thống điền có `@!`; thông tin học vụ có `!`.
 - [ ] Ô trong cùng một bảng dùng **cùng một tên nhóm**, bảng khác nhau dùng tên nhóm khác nhau.
+- [ ] Ô STT của bảng dùng Numbering của Word, không gõ tay số.
 - [ ] Đã đánh `#` cho các trường cán bộ cần xem nhanh (tối đa 5).
 - [ ] Mở F12 → Console, không có cảnh báo `[EduOne Template]`.
 
