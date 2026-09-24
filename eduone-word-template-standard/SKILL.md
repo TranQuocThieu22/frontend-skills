@@ -360,7 +360,36 @@ Khi xuất đơn, các dòng được nhân lên dùng chung danh sách đánh s
 > trên trong văn bản (ví dụ các mục "1. Lý do", "2. Cam kết"), số sẽ đếm tiếp từ danh sách đó. Khi đó
 > bấm chuột phải vào số → **Restart at 1**.
 
-### 7.4. Lưu ý
+### 7.4. Mẫu có nhiều bảng
+
+Mỗi bảng là **một nhóm riêng**, đặt tên nhóm khác nhau. Ví dụ đơn có hai bảng "Học phần xin hủy" và
+"Học phần đăng ký thay":
+
+| Bảng | Cột | Title | Tag |
+| :--- | :--- | :--- | :--- |
+| Bảng 1 | Mã HP | `Mã HP` | `ds_mon_huy(Học phần xin hủy).ma_mon*` |
+| Bảng 1 | Tên HP | `Tên HP` | `ds_mon_huy(Học phần xin hủy).ten_mon@!` |
+| Bảng 1 | Số TC | `Số TC` | `ds_mon_huy(Học phần xin hủy).so_tin_chi@!` |
+| Bảng 2 | Mã HP | `Mã HP` | `ds_mon_thay(Học phần đăng ký thay).ma_mon*` |
+| Bảng 2 | Tên HP | `Tên HP` | `ds_mon_thay(Học phần đăng ký thay).ten_mon@!` |
+| Bảng 2 | Số TC | `Số TC` | `ds_mon_thay(Học phần đăng ký thay).so_tin_chi@!` |
+
+Trên form hiện **hai khối** "Học phần xin hủy" và "Học phần đăng ký thay", mỗi khối có nút
+**+ Thêm dòng** riêng, thêm dòng bảng này không ảnh hưởng bảng kia.
+
+Ba quy tắc:
+
+- **Tên nhóm khác nhau cho mỗi bảng** (`ds_mon_huy`, `ds_mon_thay`). Trùng tên nhóm thì hai bảng bị
+  gộp thành một khối trên form, và khi xuất Word chỉ bảng đầu được nhân dòng. Tên cột (`ma_mon`,
+  `ten_mon`...) thì trùng giữa các bảng thoải mái.
+- **Mọi ô của một nhóm nằm trên cùng một dòng** của bảng Word. Hệ thống nhân dòng chứa ô đầu tiên của
+  nhóm; ô nằm ở dòng khác không được nhân và trong file Word chỉ hiện `....`.
+- **Hai nhóm không chung một dòng.** Nhân dòng của nhóm này sẽ chép luôn các ô của nhóm kia. Hai nhóm
+  nằm ở hai dòng khác nhau của cùng một bảng Word thì được.
+
+Cờ `#` tính **mỗi bảng là một mục** trong năm mục ở màn xử lý thủ tục.
+
+### 7.5. Lưu ý
 
 - **Tiêu đề nhóm** lấy từ ô **đầu tiên** của nhóm trong file. Để chắc chắn, khai giống nhau ở mọi ô.
 - Tiêu đề nhóm **không được chứa** dấu `.` hoặc `:` — sẽ làm hỏng cả Tag.
@@ -439,7 +468,8 @@ Cán bộ xử lý thấy ngay "Lý do" và bảng "Mã HP / Tên HP" trên danh
 | `gioi_tinh:select(1:Nam,2:Nữ)` | Word ghi `1`/`2` | `gioi_tinh:select(Nam,Nữ)` |
 | `ds_mon(DS môn. HK1).ma_mon` | Dấu `.` trong tiêu đề làm hỏng Tag | `ds_mon(DS môn HK1).ma_mon` |
 | Gõ tay số `1` vào ô STT của bảng | Mọi dòng đều ra `1` | Dùng Numbering của Word ([7.3](#73-cột-số-thứ-tự-stt)) |
-| Hai bảng khác nhau cùng tên nhóm `ds_mon` | Gộp thành một bảng | `ds_mon_rut`, `ds_mon_dang_ky` |
+| Hai bảng khác nhau cùng tên nhóm `ds_mon` | Gộp thành một khối trên form, bảng thứ hai không nhân dòng | `ds_mon_huy`, `ds_mon_thay` ([7.4](#74-mẫu-có-nhiều-bảng)) |
+| Ô của một nhóm nằm trên hai dòng bảng Word | Dòng thứ hai không được nhân, file Word hiện `....` | Dồn mọi ô của nhóm về một dòng |
 
 ---
 
