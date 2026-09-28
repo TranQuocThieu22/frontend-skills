@@ -17,7 +17,13 @@ When creating a commit for the project, you **MUST** adhere to the following rul
    - Commit body: Explain the changes in more detail (if necessary) and include the note about the affected menu.
 4. **Execution Process**: Absolutely **DO NOT** execute `git commit` commands automatically. You are only allowed to generate the commit message content and print it in the chat.
 5. **Display Format**: ABSOLUTELY DO NOT generate the commit message as a Terminal command (e.g., `git commit -m "..."`). Please print the ENTIRE commit content (including the Title, an empty line, and the Body) grouped into **ONE single raw text code block**. Do not separate the title and body into different texts, so the user can click Copy once and paste it directly into a Git GUI interface (like Fork, SourceTree) quickly.
-6. **Separate Commits for Skills and Code**: If your work involves updates/edits in both the `.agents/skills` directory (guides/rules) and the project's source code directory, you **MUST** generate 2 separate commit messages. One commit specifically for the skills directory (since skills are stored in a separate repo/part), and one commit for the project source code. Absolutely do not merge them into 1 commit message.
+6. **Exception — "tạo pr"**: When the user says **"tạo pr"** (case-insensitive, e.g. "Tạo PR"), rule 4 is overridden and you MUST run the whole flow yourself:
+   - On `main`: create a new branch (named per the convention below), commit, push, then open a pull request into `main`.
+   - Already on a separate branch: commit any remaining changes, push, then open a pull request into `main`.
+   - Never commit directly on `main`. Commit messages still follow every rule above.
+   - The remote is Azure DevOps Server on-prem (`https://portal.aqtech.vn:1443/tfs/aq`, project & repo `AQnewWeb`): `gh` and `az devops` do not work — create the PR via REST API `POST .../_apis/git/repositories/AQnewWeb/pullrequests` with a PAT, sending the JSON body as UTF-8 bytes (Vietnamese branch names/descriptions).
+   - **Always finish the reply with the pull request URL** (`https://portal.aqtech.vn:1443/tfs/aq/AQnewWeb/_git/AQnewWeb/pullrequest/<id>`).
+7. **Separate Commits for Skills and Code**: If your work involves updates/edits in both the `.agents/skills` directory (guides/rules) and the project's source code directory, you **MUST** generate 2 separate commit messages. One commit specifically for the skills directory (since skills are stored in a separate repo/part), and one commit for the project source code. Absolutely do not merge them into 1 commit message.
 
 ## Git Branch Naming Convention
 
